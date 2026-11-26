@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>短线交易复盘 · 归档</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Microsoft YaHei", "PingFang SC", sans-serif;
+    background: #f0f2f5; color: #1a1a2e; line-height: 1.6; padding-bottom: 60px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+  .header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #fff; padding: 40px 36px; border-radius: 0 0 20px 20px;
+    position: relative; overflow: hidden;
+  }
+  .header::after {
+    content: ''; position: absolute; top: 0; right: 0; width: 320px; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(230,57,70,0.18));
+  }
+  .header h1 { font-size: 30px; font-weight: 800; letter-spacing: 1px; position: relative; z-index: 1; }
+  .header .subtitle { font-size: 14px; color: #a0aec0; margin-top: 8px; position: relative; z-index: 1; }
+  .header .meta { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; position: relative; z-index: 1; }
+  .meta-item {
+    background: rgba(255,255,255,0.08); padding: 6px 16px; border-radius: 20px;
+    font-size: 13px; color: #cbd5e0;
+  }
+  .meta-item span { color: #e63946; font-weight: 700; }
+
+  .toolbar {
+    background: #fff; margin: 24px 0 8px; padding: 16px 20px; border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06); display: flex; gap: 14px;
+    align-items: center; flex-wrap: wrap;
+  }
+  .search {
+    flex: 1; min-width: 240px; padding: 10px 16px; border: 2px solid #eef0f3;
+    border-radius: 10px; font-size: 14px; outline: none; transition: border-color .2s;
+  }
+  .search:focus { border-color: #e63946; }
+  .filter-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .filter-btn {
+    padding: 8px 16px; border: 1.5px solid #e2e8f0; border-radius: 8px;
+    background: #fff; color: #4a5568; font-size: 13px; cursor: pointer;
+    font-weight: 600; transition: all .2s;
+  }
+  .filter-btn:hover { border-color: #e63946; color: #e63946; }
+  .filter-btn.active { background: #e63946; color: #fff; border-color: #e63946; }
+
+  .group { margin-top: 28px; }
+  .group-title {
+    font-size: 17px; font-weight: 700; color: #2c3e50; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .group-dot { width: 6px; height: 20px; background: #e63946; border-radius: 3px; }
+  .group-count { font-size: 12px; color: #999; font-weight: 400; margin-left: 6px; }
+  .cards { display: flex; flex-direction: column; gap: 10px; }
+
+  .card {
+    background: #fff; border-radius: 12px; padding: 16px 20px;
+    display: flex; align-items: center; gap: 18px; text-decoration: none;
+    color: inherit; box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    border-left: 4px solid #e63946; transition: transform .15s, box-shadow .15s;
+  }
+  .card:hover { transform: translateX(4px); box-shadow: 0 4px 18px rgba(230,57,70,0.15); }
+  .card-date { min-width: 76px; text-align: center; }
+  .card-date .day { display: block; font-size: 20px; font-weight: 800; color: #1a1a2e; }
+  .card-date .week { display: block; font-size: 12px; color: #999; margin-top: 2px; }
+  .card-body { flex: 1; min-width: 0; }
+  .card-title { font-size: 15px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
+  .card-sub {
+    font-size: 12px; color: #718096;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .card-arrow { font-size: 22px; color: #e63946; font-weight: 700; }
+  .tag {
+    display: inline-block; padding: 1px 8px; border-radius: 8px; font-size: 11px;
+    font-weight: 600; vertical-align: middle;
+  }
+  .tag-danger { background: #c0392b; color: #fff; }
+
+  .empty { text-align: center; padding: 60px 20px; color: #999; display: none; }
+  .footer { text-align: center; color: #a0aec0; font-size: 12px; margin-top: 40px; }
+
+  @media (max-width: 640px) {
+    .header { padding: 28px 22px; border-radius: 0 0 16px 16px; }
+    .header h1 { font-size: 23px; }
+    .card { padding: 14px; gap: 12px; }
+    .card-date { min-width: 58px; }
+    .card-date .day { font-size: 17px; }
+    .card-sub { white-space: normal; }
+  }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="container" style="padding:0">
+      <h1>短线交易复盘 · 归档</h1>
+      <div class="subtitle">每日复盘按日期归档，点击任意一条查看完整内容</div>
+      <div class="meta">
+        <div class="meta-item">共 <span>46</span> 篇</div>
+        <div class="meta-item">跨度 <span>09.14 — 11.26</span></div>
+        <div class="meta-item">更新于 <span>2026-11-26 17:47</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="toolbar">
+      <input class="search" id="search" type="text" placeholder="搜索日期或关键词，如 2026.11.26 或 机器人…">
+      <div class="filter-btns">
+        <button class="filter-btn active" data-year="all">全部</button>
+        <button class="filter-btn" data-year="2026">2026</button>
+      </div>
+    </div>
+
+    <div id="content">
+    <section class="group">
+      <h2 class="group-title"><span class="group-dot"></span>2026 年 11 月<span class="group-count">17 篇</span></h2>
+      <div class="cards">
+      <a class="card" href="posts/duanxian-fupan-20261126.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">11.26</span>
+          <span class="week">周四</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.11.26（周四） <span class="tag tag-danger">最新</span></div>
+          <div class="card-sub">地量分化 · 表层修复（跌停塌缩 85% · 广度仅 31.7% · 托底资金换边）</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261125.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">11.25</span>
+          <span class="week">周三</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.11.25（周三） </div>
+          <div class="card-sub">缩量普跌 · 塔尖收缩（晋级率高度曲线倒置 · 腰部塌陷）｜ 降档线触发日</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261124.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">11.24</span>
+          <span class="week">周二</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.11.24（周二） </div>
+          <div class="card-sub">放量分化 · 冲高派发（科技权重独撑 · 接力一日降温）｜ 短线复盘日常期</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261123.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">11.23</span>
+          <span class="week">周一</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.11.23（周一） </div>
+          <div class="card-sub">A 股收盘后 · 题材 · 情绪 · 资金 · 连板梯队 · 决策矩阵</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261120.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">11.20</span>
+          <span class="week">周五</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.11.20（周五） </div>
+          <div class="card-sub">A 股收盘后 · 题材 · 情绪 · 资金 · 连板梯队 · 决策矩阵</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261119.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">11.19</span>
+          <span class="week">周四</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.11.19（周四） </div>
+          <div class="card-sub">A 股短线复盘</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261117.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">11.17</span>
+          <span class="week">周二</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.11.17（周二） </div>
+          <div class="card-sub">A 股短线复盘</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261116.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">11.16</span>
+          <span class="week">周一</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.11.16（周一） </div>
+          <div class="card-sub">A 股短线复盘</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261113.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">11.13</span>
+          <span class="week">周五</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.11.13（周五） </div>
+          <div class="card-sub">A 股短线复盘</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261112.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">11.12</span>
+          <span class="week">周四</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.11.12（周四） </div>
+          <div class="card-sub">A 股短线复盘</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261111.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">11.11</span>
+          <span class="week">周三</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.11.11（周三） </div>
+          <div class="card-sub">A 股短线复盘</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261110.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">11.10</span>
+          <span class="week">周二</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.11.10（周二） </div>
+          <div class="card-sub">A 股短线复盘</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261109.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">11.09</span>
+          <span class="week">周一</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.11.09（周一） </div>
+          <div class="card-sub">A 股短线复盘</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261106.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">11.06</span>
+          <span class="week">周五</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.11.06（周五） </div>
+          <div class="card-sub">A 股短线复盘</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261105.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">11.05</span>
+          <span class="week">周四</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.11.05（周四） </div>
+          <div class="card-sub">A 股短线复盘</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261104.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">11.04</span>
+          <span class="week">周三</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.11.04（周三） </div>
+          <div class="card-sub">A 股短线复盘</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261102.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">11.02</span>
+          <span class="week">周一</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.11.02（周一） </div>
+          <div class="card-sub">A 股短线复盘</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      </div>
+    </section>
+    <section class="group">
+      <h2 class="group-title"><span class="group-dot"></span>2026 年 10 月<span class="group-count">17 篇</span></h2>
+      <div class="cards">
+      <a class="card" href="posts/duanxian-fupan-20261030.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">10.30</span>
+          <span class="week">周五</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.10.30（周五） </div>
+          <div class="card-sub">A 股短线复盘</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261029.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">10.29</span>
+          <span class="week">周四</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.10.29（周四） </div>
+          <div class="card-sub">A 股短线复盘</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261028.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">10.28</span>
+          <span class="week">周三</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.10.28（周三） </div>
+          <div class="card-sub">A 股短线复盘</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261027.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">10.27</span>
+          <span class="week">周二</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.10.27（周二） </div>
+          <div class="card-sub">A 股短线复盘</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261026.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">10.26</span>
+          <span class="week">周一</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.10.26（周一） </div>
+          <div class="card-sub">A 股短线复盘</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261023.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">10.23</span>
+          <span class="week">周五</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.10.23（周五） </div>
+          <div class="card-sub">A 股短线复盘</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261022.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">10.22</span>
+          <span class="week">周四</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.10.22（周四） </div>
+          <div class="card-sub">A 股短线复盘</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261021.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">10.21</span>
+          <span class="week">周三</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.10.21（周三） </div>
+          <div class="card-sub">A 股短线复盘</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261020.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">10.20</span>
+          <span class="week">周二</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架·2026.10.20（周二） </div>
+          <div class="card-sub">A 股短线复盘</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261019.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">10.19</span>
+          <span class="week">周一</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.10.19（周一） </div>
+          <div class="card-sub">A 股短线复盘</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261016.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">10.16</span>
+          <span class="week">周五</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.10.16（周五） </div>
+          <div class="card-sub">A 股短线复盘</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261015.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">10.15</span>
+          <span class="week">周四</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.10.15（周四） </div>
+          <div class="card-sub">A 股短线复盘</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261014.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">10.14</span>
+          <span class="week">周三</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.10.14（周三） </div>
+          <div class="card-sub">A 股短线复盘</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261013.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">10.13</span>
+          <span class="week">周二</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.10.13（周二） </div>
+          <div class="card-sub">A 股短线复盘</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261012.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">10.12</span>
+          <span class="week">周一</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.10.12（周一） </div>
+          <div class="card-sub">缩量普跌失守 3800 ｜ 抱团收缩 / 主线第二日验证 / 一字板判据修正 / 防御方向的性质区分 ｜ 验证基准：2026.10.09（周五）</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261009.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">10.09</span>
+          <span class="week">周五</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.10.09（周五） </div>
+          <div class="card-sub">早盘深挫午后 V 型反转 ｜ 龙头 对 杂毛 / 跟风反推识别 / 辟谣排查 / 题材质量评估 ｜ 验证基准：2026.10.08（周四）</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20261008.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">10.08</span>
+          <span class="week">周四</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.10.08（周四） </div>
+          <div class="card-sub">国庆长假后首个交易日 ｜ 龙头 对 杂毛 / 跟风反推识别 / 辟谣排查 / 题材质量评估 ｜ 验证基准：2026.09.22（跨期，间隔 11 个交易日）</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      </div>
+    </section>
+    <section class="group">
+      <h2 class="group-title"><span class="group-dot"></span>2026 年 09 月<span class="group-count">12 篇</span></h2>
+      <div class="cards">
+      <a class="card" href="posts/duanxian-fupan-20260930.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">09.30</span>
+          <span class="week">周三</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.09.30（周三） </div>
+          <div class="card-sub">龙头 对 杂毛 / 跟风反推识别 / 辟谣排查 / 题材质量评估 ｜ 验证基准：2026.09.29（周二，地量弱修复日）</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20260929.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">09.29</span>
+          <span class="week">周二</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.09.29（周二） </div>
+          <div class="card-sub">龙头 对 杂毛 / 跟风反推识别 / 辟谣排查 / 题材质量评估 ｜ 验证基准：2026.09.28（周一，冰点日）</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20260928.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">09.28</span>
+          <span class="week">周一</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.09.28（周一） </div>
+          <div class="card-sub">龙头 对 杂毛 / 跟风反推识别 / 辟谣排查 / 题材质量评估 ｜ 验证基准：2026.09.24（周四，节前最后交易日）</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20260924.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">09.24</span>
+          <span class="week">周四</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.09.24（周四） </div>
+          <div class="card-sub">龙头 对 杂毛 / 跟风反推识别 / 辟谣排查 / 题材质量评估 ｜ 验证基准：2026.09.23（周三）</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20260923.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">09.23</span>
+          <span class="week">周三</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.09.23（周三） </div>
+          <div class="card-sub">龙头 对 杂毛 / 跟风反推识别 / 辟谣排查 / 题材质量评估 ｜ 验证基准：2026.09.22（周二）</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20260922.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">09.22</span>
+          <span class="week">周二</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.09.22（周二） </div>
+          <div class="card-sub">龙头 对 杂毛 / 跟风反推识别 / 辟谣排查 / 题材质量评估 ｜ 验证基准：2026.09.21（周一）</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20260921.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">09.21</span>
+          <span class="week">周一</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.09.21（周一） </div>
+          <div class="card-sub">龙头 对 杂毛 / 跟风反推识别 / 辟谣排查 / 题材质量评估 ｜ 验证基准：2026.09.18（周五）</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20260918.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">09.18</span>
+          <span class="week">周五</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.09.18（周五） </div>
+          <div class="card-sub">龙头 对 杂毛 / 跟风反推识别 / 辟谣排查 / 题材质量评估 ｜ 验证基准：2026.09.17（周四）</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20260917.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">09.17</span>
+          <span class="week">周四</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.09.17（周四） </div>
+          <div class="card-sub">龙头 vs 杂毛 / 跟风反推识别 / 辟谣排查 / 题材质量评估 ｜ 验证基准：2026.09.16（周三）</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20260916.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">09.16</span>
+          <span class="week">周三</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.09.16（周三） </div>
+          <div class="card-sub">龙头 vs 杂毛 / 跟风反推识别 / 辟谣排查 / 题材质量评估 ｜ 验证基准：2026.09.15（周二）</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20260915.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">09.15</span>
+          <span class="week">周二</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.09.15（周二） </div>
+          <div class="card-sub">龙头 vs 杂毛 / 跟风反推识别 / 辟谣排查 / 题材质量评估 ｜ 验证基准：2026.09.14（周一）</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      <a class="card" href="posts/duanxian-fupan-20260914.html" target="_blank" rel="noopener">
+        <div class="card-date">
+          <span class="day">09.14</span>
+          <span class="week">周一</span>
+        </div>
+        <div class="card-body">
+          <div class="card-title">短线交易复盘框架 · 2026.09.14（周一） </div>
+          <div class="card-sub">龙头 vs 杂毛 / 跟风反推识别 / 辟谣排查 / 题材质量评估 ｜ 验证基准：2026.09.11（周五）</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </a>
+      </div>
+    </section>
+    </div>
+    <div class="empty" id="empty">没有匹配的复盘</div>
+    <div class="footer">短线交易复盘框架 · 自动生成于每日收盘后</div>
+  </div>
+
+<script>
+(function() {
+  var search = document.getElementById('search');
+  var cards = Array.prototype.slice.call(document.querySelectorAll('.card'));
+  var groups = Array.prototype.slice.call(document.querySelectorAll('.group'));
+  var empty = document.getElementById('empty');
+  var buttons = Array.prototype.slice.call(document.querySelectorAll('.filter-btn'));
+  var activeYear = 'all';
+
+  function apply() {
+    var q = search.value.trim().toLowerCase();
+    var shown = 0;
+    cards.forEach(function(c) {
+      var text = c.textContent.toLowerCase();
+      var href = c.getAttribute('href');
+      var yearOk = activeYear === 'all' || href.indexOf(activeYear) !== -1;
+      var ok = yearOk && (q === '' || text.indexOf(q) !== -1);
+      c.style.display = ok ? '' : 'none';
+      if (ok) shown++;
+    });
+    groups.forEach(function(g) {
+      var any = Array.prototype.slice.call(g.querySelectorAll('.card')).some(function(c) {
+        return c.style.display !== 'none';
+      });
+      g.style.display = any ? '' : 'none';
+    });
+    empty.style.display = shown === 0 ? 'block' : 'none';
+  }
+
+  search.addEventListener('input', apply);
+  buttons.forEach(function(b) {
+    b.addEventListener('click', function() {
+      buttons.forEach(function(x) { x.classList.remove('active'); });
+      b.classList.add('active');
+      activeYear = b.getAttribute('data-year');
+      apply();
+    });
+  });
+})();
+</script>
+</body>
+</html>

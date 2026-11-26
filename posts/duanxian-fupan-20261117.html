@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>短线交易复盘框架 · 2026.11.17（周二）</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Microsoft YaHei", "PingFang SC", sans-serif;
+    background: #f0f2f5;
+    color: #1a1a2e;
+    padding: 24px;
+    line-height: 1.6;
+  }
+  .container { max-width: 1400px; margin: 0 auto; }
+
+  .header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #fff;
+    padding: 32px 40px;
+    border-radius: 16px 16px 0 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 300px; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(230,57,70,0.15));
+  }
+  .header h1 { font-size: 28px; font-weight: 800; letter-spacing: 1px; }
+  .header .subtitle { font-size: 14px; color: #a0aec0; margin-top: 6px; }
+  .header .meta { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+  .header .meta-item {
+    background: rgba(255,255,255,0.08);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    color: #cbd5e0;
+  }
+  .header .meta-item span { color: #e63946; font-weight: 700; }
+  .header .meta-item span.green { color: #2ecc71; }
+
+  .section {
+    background: #fff;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .section-header {
+    padding: 16px 24px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-header .icon { font-size: 22px; }
+  .sh-0 { background: linear-gradient(135deg, #6c5ce7, #a29bfe); }
+  .sh-1 { background: linear-gradient(135deg, #c0392b, #e74c3c); }
+  .sh-2 { background: linear-gradient(135deg, #2c3e50, #34495e); }
+  .sh-3 { background: linear-gradient(135deg, #8e44ad, #9b59b6); }
+  .sh-4 { background: linear-gradient(135deg, #d35400, #e67e22); }
+  .sh-5 { background: linear-gradient(135deg, #16a085, #1abc9c); }
+  .sh-6 { background: linear-gradient(135deg, #2980b9, #3498db); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th {
+    background: #f8f9fa;
+    padding: 12px 10px;
+    text-align: center;
+    font-weight: 700;
+    color: #2c3e50;
+    border-bottom: 3px solid #e63946;
+    white-space: nowrap;
+    position: sticky; top: 0;
+  }
+  tbody td {
+    padding: 10px 8px;
+    text-align: center;
+    border-bottom: 1px solid #eef0f3;
+    vertical-align: middle;
+  }
+  tbody tr:hover { background: #fff5f5; }
+  tbody tr:nth-child(even) { background: #fafbfc; }
+  tbody tr:nth-child(even):hover { background: #fff5f5; }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .tag-red { background: #ffe0e0; color: #c0392b; }
+  .tag-green { background: #d5f5e3; color: #1e8449; }
+  .tag-orange { background: #fef5e7; color: #d35400; }
+  .tag-blue { background: #e8f0fe; color: #196f3d; }
+  .tag-purple { background: #f4ecf7; color: #7d3c98; }
+  .tag-gray { background: #eee; color: #666; }
+  .tag-dark { background: #2c3e50; color: #fff; }
+  .tag-danger { background: #c0392b; color: #fff; }
+  .tag-warning { background: #f39c12; color: #fff; }
+
+  .stock-name { font-weight: 700; color: #1a1a2e; }
+  .stock-code { font-size: 11px; color: #999; }
+  .signal-up { color: #e63946; font-weight: 700; }
+  .signal-down { color: #2ecc71; font-weight: 700; }
+
+  .logic-box { padding: 24px; background: #fff; }
+  .logic-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .logic-card {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 18px 20px;
+    border-left: 4px solid #e63946;
+  }
+  .logic-card h4 {
+    font-size: 15px; font-weight: 700; color: #1a1a2e;
+    margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
+  }
+  .logic-card p { font-size: 13px; color: #555; line-height: 1.7; }
+  .logic-card .key { color: #e63946; font-weight: 700; }
+  .logic-card.green-card { border-left-color: #1abc9c; }
+  .logic-card.green-card .key { color: #1abc9c; }
+  .logic-card.orange-card { border-left-color: #e67e22; }
+  .logic-card.orange-card .key { color: #e67e22; }
+  .logic-card.purple-card { border-left-color: #9b59b6; }
+  .logic-card.purple-card .key { color: #9b59b6; }
+
+  .sub-title {
+    font-size: 15px; font-weight: 700; color: #1a1a2e;
+    margin: 22px 0 10px; padding-left: 10px; border-left: 4px solid #e63946;
+  }
+  .sub-note { font-size: 12.5px; color: #666; margin-bottom: 8px; }
+
+  .alert-box {
+    margin: 16px 24px;
+    padding: 14px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .alert-danger { background: #fff5f5; border: 1px solid #fab1a0; color: #c0392b; }
+  .alert-warning { background: #fef9e7; border: 1px solid #ffeaa7; color: #d35400; }
+  .alert-info { background: #eef7ff; border: 1px solid #74b9ff; color: #2c3e50; }
+  .alert-success { background: #eafaf1; border: 1px solid #2ecc71; color: #1e8449; }
+
+  .footer {
+    text-align: left;
+    padding: 24px 32px;
+    font-size: 12.5px;
+    color: #666;
+    background: #fff;
+    border-radius: 0 0 12px 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    line-height: 1.9;
+  }
+  .footer .disc { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #ddd; color: #999; }
+  @media (max-width: 768px) {
+    body { padding: 12px; }
+    .header { padding: 20px; }
+    .header h1 { font-size: 20px; }
+    .logic-grid { grid-template-columns: 1fr; }
+    table { font-size: 11px; }
+    thead th, tbody td { padding: 8px 4px; }
+  }
+
+  .text-left { text-align: left; }
+  .font-bold { font-weight: 700; }
+  .color-red { color: #e63946; }
+  .color-green { color: #2ecc71; }
+</style>
+</head>
+<body><div class="container"><div class="header">
+<h1>A 股短线交易复盘框架 · 2026.11.17</h1>
+<div class="header-sub">A 股收盘后 · 题材 · 情绪 · 资金 · 连板梯队 · 决策矩阵</div>
+<div class="meta-grid">
+<div class="meta-item">日期：<span>2026.11.17（周二）</span>　上一交易日 11/16（周一），间隔 1 个交易日（无缺失），完整闭环</div>
+<div class="meta-item">涨停：<span class="signal-up">37 只</span>（财联社剔 ST、退市股）／38 只（含 ST 口径）；首板约 31 只（37 减 6 只连板）</div>
+<div class="meta-item">跌停：<span class="signal-down">77 只</span> 非 ST／<span class="signal-down">84 只</span> 含 ST（含 20cm 跌停）；涨跌停比 <span class="color-red">37:77</span>——跌停 2.08 倍于涨停，<span class="color-red">绝对数双双上升（33→37、68→77），比值基本持平</span></div>
+<div class="meta-item">封板率：<span class="signal-up">65%</span>（20 股炸板、炸板率 35%）；较上期 67% 微降</div>
+<div class="meta-item">成交额：<span class="signal-down">1.4577 万亿</span> 缩量 267.96 亿（−1.8%）；沪深京三市约 1.47 万亿缩量约 266 亿并列；<span class="color-red">连续第三日 ＜1.5 万亿</span></div>
+<div class="meta-item">晋级率：连板口径 <span class="signal-down">9.09%</span>（昨日 11 只连板今日仅 1 只晋级）；<span class="color-red">与 11/9 并列闭环最低</span></div>
+<div class="meta-item">连板家数：<span class="signal-down">6 只</span>（前一日 11 只，腰斩）</div>
+<div class="meta-item">最高板：<span class="color-red">3 板 华东重机</span>（002685，一字、换手 3.38%、成交 2.28 亿）——<span class="color-red">按规则 197 不计入市场高度，真实高度 2 板（4 只并列）</span></div>
+<div class="meta-item">涨跌家数：<span class="signal-up">1326</span> / <span class="signal-down">4119</span>　上涨占比 <span class="signal-down">23%</span>（平盘 135、停牌 7）</div>
+<div class="meta-item">指数：<span class="signal-down">−0.50%</span> 沪指 3584.58（失守 3600，盘中最低 3565.59）｜ 深成 <span class="signal-down">−0.49%</span> ｜ 创业板 <span class="signal-down">−1.20%</span>（盘中曾涨近 1%，振幅 3.42%）｜ 科创50 <span class="signal-up">＋0.62%</span>（盘中一度涨超 3%）｜ 上证50 <span class="signal-up">＋0.06%</span> ｜ 沪深300 <span class="signal-down">−0.08%</span> ｜ 北证50 <span class="signal-up">＋0.59%</span></div>
+<div class="meta-item">情绪周期：<span class="color-red">缩量新低 · 单向搬家型退潮（半导体材料接棒内容链 ＋ 防御资金断供）</span>——传媒 −55.29 亿转半导体 ＋29.63 亿、银行 9 家新高却 −13.55 亿、ETF 尾盘历史天量护指数不护个股</div>
+</div>
+</div>
+
+<div class="section">
+<div class="section-header sh-0"><span class="icon">✅</span> 〇、昨日验证（11/16 清单 · 间隔 1 个交易日）</div>
+<div class="alert-box alert-info"><span>🔁</span><div><strong>本节结论先行：5 ✅ ／ 0 ◐ ／ 0 ❌（P2-1 属性锚走 B 分支「作废」，不计入命中率）。</strong>这是闭环机制建立以来第一次「全中」，但这份成绩单必须先打个折再读：<span class="color-red">六条判据里有五条是「A／B 双分支穷尽 ＋ 中性带极窄」的结构，这种写法在数学上几乎不可能出现 ❌——命中的是判据的字面，不是框架的预见</span>。真正有信息量的是分支分布：<strong>五条计分条目里四条同时走 B（恶化端／延续端），只有 P0-3 走 A（九阳地天板）</strong>。四条判据装在同一个方向上、市场又只回答一个方向，这与 10/23 的「传感器同轴」同构，只是这次同轴在「分支方向」上而非「读数」上。</div></div>
+<div class="sub-note">以下 6 条沿用上一期原文的优先级与触发条件，判定标注 <strong>✅ 应验 ／ ◐ 部分兑现 ／ ❌ 未兑现</strong>。P0×3、P1×2、P2×1（P2-1 不计命中率）。</div>
+<div style="overflow-x:auto"><table>
+<thead><tr><th style="width:56px">优先级</th><th style="width:190px">上期判据</th><th style="width:300px">今日实际读数</th><th style="width:52px">判定</th><th>框架级规则修正</th></tr></thead>
+<tbody>
+<tr><td><span class="tag tag-danger">P0-1</span></td><td class="text-left font-bold">出清第二段的次日路径：衰减还是延续<br><span class="color-gray">A：非ST跌停 ≤30 → 第二段衰减；B：≥45 → 中段延续。失效线：≥前值×1.5（≥90）→ 系统性崩塌</span></td><td class="text-left"><strong>B 分支成立：中段延续</strong>。非 ST 跌停 <span class="signal-down">77 只</span>（含 ST 84 只），较前值 60—63 只再增约 22%，是本轮出清的最高读数；跌停对涨停 77:37＝<span class="color-red">2.08 倍</span>。失效线未触发（77 ＜ 90）。但有一处与判据预设相反的细节：<span class="color-red">涨停家数同步从 33 升到 37、广度从 20% 升到 23%——「跌停创新高」与「涨停回升」同日出现，这不是单纯的「中段延续」，是「一边清算、一边建仓」</span>。跌停群结构：传媒内容链占绝对多数（北京文化、浙文影业、大晟文化、文投控股、横店影视、慈文传媒、欢瑞世纪、龙版传媒、新华传媒、华数传媒、粤传媒、湖北广电、电魂网络、思美传媒），另有物理 AI（杰克科技、福莱新材）与稀土（中国稀土、中稀有色）。</td><td class="text-center"><span class="tag tag-success">✅</span></td><td class="text-left"><strong>规则 207（新立）：跌停与涨停同步上升，是「结构性清算」而非「全面恶化」，定性必须写「分化」、仓位判据从广度切到涨跌停比。</strong>上期的分支设计默认了「跌停增加＝市场变差」这一个维度，但今日跌停 68→77（＋13%）、涨停 33→37（＋12%）、广度 20%→23%——<span class="color-red">三个读数同向变「多」，比值 2.06→2.08 几乎不动。这意味着退潮不是加深，是分裂：清算端与被选中端同时扩容</span>。旧写法（只数跌停）会把「分化加剧」误读成「恶化加剧」，进而给出过度保守的仓位建议。此后凡跌停与涨停同向变动，一律以比值为定性侧、绝对数只记档。</td></tr>
+<tr><td><span class="tag tag-danger">P0-2</span></td><td class="text-left font-bold">防御单极第四日：银行双读数续证还是断裂<br><span class="color-gray">A：银行续涨 且 资金续正 → 停泊第四日；B：转跌 或 资金转负 → 停泊兑现。上证50 只作背景</span></td><td class="text-left"><strong>B 分支成立：停泊兑现（资金侧断裂）</strong>。银行（申万一级）<span class="signal-up">＋0.31%</span> 续涨、收 4524.36，42 只成分 23 涨 13 跌，<span class="color-red">工行、建行、中行、江苏、南京、杭州、长沙、成都、沪农商 9 家创历史新高</span>——价格侧仍是标准的防御形态；但主力资金 <span class="signal-down">−13.55 亿</span>（申万一级 Wind 口径；东财二级银行Ⅱ −13.54 亿，两口径一致）<span class="color-red">由正转负，为 11/13 以来首次</span>。上证50 <span class="signal-up">＋0.06%</span> 尾盘翻红（盘中最低 2739.54、一度跌约 1.0%），作背景读数。<span class="color-red">价格创新高与资金净流出同日出现，是本条判据最关键的一次判例：上期「42 只全涨＋7 只新高＋仅 0.85 亿净流入」已经是「指数贡献大于真实赚钱效应」，今天 0.85 亿也守不住了</span>。</td><td class="text-center"><span class="tag tag-success">✅</span></td><td class="text-left"><strong>规则 209（新立）：防御属性的「价格—资金背离」必须以资金为判定侧——价格创新高是存量低换手定价，资金转负才是配置盘离场。</strong>银行今日换手仅 0.33%、成交 361.85 亿，9 家新高只用了极小的边际成交——<span class="color-red">这种「低换手新高」可以靠惯性维持数日，它测的是「有没有人卖」，不是「有没有人买」；而 −13.55 亿的净流出测的是「配置盘还在不在」</span>。规则 203 解决了「用哪个指标」，本条解决「指标打架时听谁」：价格是滞后变量、资金是单向可证伪变量（与 10/15 元发现同源）。落地：停泊身份的存续只看资金，价格只用于记录「是否已出现价跌」这一个断点。</td></tr>
+<tr><td><span class="tag tag-danger">P0-3</span></td><td class="text-left font-bold">九阳股份炸板次日：四档化记录<br><span class="color-gray">A：收红（含续板）→ 炸板承接；B：±2% → 分歧延续；C：跌 ≤5% → 接盘离场；D：跌停或跌超 7% → 标杆断裂</span></td><td class="text-left"><strong>A 分支成立，且强度超出该档上限：地天板</strong>。九阳股份（002242）<span class="signal-up">＋10.02%</span> 收 31.52 元封涨停，<span class="color-red">盘中最低 25.79 元（−9.98%），全天振幅 20.0%，从跌停板拉到涨停板</span>；换手 16.35%（前一日 18.2%，未缩量）、成交 35.44 亿、收盘价即 52 周新高。判据四档全部按「收盘相对前收」设计，<span class="color-red">地天板落在 A 档内部却与「微红」共享同一档位——档位设计漏掉了「日内反转」这个维度</span>。</td><td class="text-center"><span class="tag tag-success">✅</span><br><span class="tag tag-warning">超档</span></td><td class="text-left"><strong>规则 184 的四档化需增设「反包档」：日内自跌停区拉至涨停（振幅 ≥15%）的收盘，不计入 A 档「收红」，单列 A＋ 反包档，其容器含义与 A 档相反。</strong>A 档「收红」的含义是「炸板后仍有承接」，是衰减；<span class="color-red">A＋ 反包的含义是「跌停被反向利用」，是二次定价——两者都收红，但一个是余温、一个是新火</span>。差别在换手：A 档收红通常伴随缩量（承接盘不敢加），A＋ 反包必然伴随高换手（多空在同一天完成换手）。今日 16.35% 的换手配 20% 振幅，属于后者。附加读数：52 周新高 ＋ PE（TTM）364 倍，估值不构成任何支撑，容器的定价完全由情绪与筹码结构决定。</td></tr>
+<tr><td><span class="tag tag-warning">P1-1</span></td><td class="text-left font-bold">北纬科技 5 板尝试：折价档能否解除<br><span class="color-gray">A：换手板晋级 5 板 → 折价解除；B：断板（四档记录）→ 高度回落 3 板。失效线：连板 ≤4 只 → 高度真空</span></td><td class="text-left"><strong>B 分支成立，且落在 D 档：崩塌</strong>。北纬科技（002148）<span class="signal-down">−7.31%</span> 收 8.11 元，<span class="color-red">换手 42.76%（全市场最高之列）、成交 16.03 亿</span>，日内最高 8.77（＋0.23%）、最低 7.88（−9.94%）、振幅 10.17%——高开冲高后单边崩塌，属「巨量换手的下跌」而非缩量回踩。上期「折价解除的唯一条件是次日以换手板续板」：<span class="color-red">今日换手 42.76% 满足了「换手」的字面，方向却相反——折价不但没解除，直接进入崩塌档</span>。高度：连板 6 只 ＞4，失效线未触发；但真实高度已降至 2 板（见规则 208）。</td><td class="text-center"><span class="tag tag-success">✅</span></td><td class="text-left"><strong>规则 208（新立）：「最高板」在退潮期系统性虚高，必须以「真实高度」替代，且剔除条件用规则 197 的双门槛。</strong>今日最高标称 3 板（华东重机），但其<span class="color-red">换手 3.38% ＜5%、成交 2.28 亿 ＜3 亿，两项同时低于规则 197 的门槛——按该规则不计入市场高度，真实高度应取次高档＝2 板（小熊电器、长虹美菱、顺钠股份、北投科技，4 只并列）</span>。这是规则 197 立条后的第一次实战，结论是：<span class="color-red">退潮期的「高度」有三层虚高——一字板虚高（无换手）、T 字板虚高（惊险回封）、缩量板虚高（无成交），三层叠在一起会把 2 板的市场读成 3 板甚至 4 板</span>。落地：最高板一律标注「标称／真实」两个数，梯队读数只认真实高度。</td></tr>
+<tr><td><span class="tag tag-warning">P1-2</span></td><td class="text-left font-bold">上证 3574 前低保卫：单条件状态题<br><span class="color-gray">A：收盘 ≥3574 → 震荡区间维持；B：收盘 ＜3574 → 前低破位、定性升「流动性塌陷」</span></td><td class="text-left"><strong>A 分支成立（收盘判据），但盘中已破</strong>。上证收 3584.58，高于 3574 约 10.6 点；<span class="color-red">盘中最低 3565.59，已下穿 3574 约 8.4 点——52 周低点在盘中已被击穿，收盘是收回而非守住</span>。上期判据写死「收盘价为准、不看盘中」，因此判 A；但必须记档：<span class="color-red">这是「盘中破位、收盘收回」形态第二次出现（上期为 3600 整数关，本期为 3574 前低），且本期破的是年内低点本身——技术位的性质已从「支撑」变为「争夺位」</span>。同时沪指创 8 月 5 日以来收盘新低，深成指、创业板指同步创年内新低。</td><td class="text-center"><span class="tag tag-success">✅</span></td><td class="text-left"><strong>「收盘价为准」在整数关与前低上必须分设两套判据：整数关可只看收盘，前低必须同时记录「盘中是否击穿」。</strong>整数关是心理位，盘中触及不消耗其意义；<span class="color-red">前低是筹码位，盘中击穿即意味着该位置上的止损盘已被触发过一轮，支撑的有效性已被消耗——收盘收回只说明「没有形成第二波」，不说明「支撑还在」</span>。落地：前低类判据改为双读数——收盘（判定分支）＋盘中（记档支撑消耗度），两者不一致时定性加注「支撑降级为争夺位」。</td></tr>
+<tr><td><span class="tag tag-blue">P2-1</span></td><td class="text-left font-bold">【反向属性条目】猪肉股期同向的延续<br><span class="color-gray">（以属性立项，不设失效线）A：养殖业 ≥1.5% 且 期货 ≥9500 → 续证；B：养殖业转跌 或 期货 ＜9500 → 股期脱钩</span></td><td class="text-left"><strong>B 分支成立：股期脱钩，属性作废</strong>。养殖业（申万二级）<span class="signal-down">−0.88%</span> 收 2991.88 <strong>转跌</strong>（前一日 ＋0.79%、11/14 ＋2.35%，三日动能序列 ＋2.35%→＋0.79%→−0.88% 单调衰减至转负）；生猪主力（LH2701）收 <span class="signal-down">9930 元／吨</span>（−0.20%，前结算 9865；日内开 10040、最高 10050、最低 9885、持仓减 666 手）。<span class="color-red">期货仍在 9500 上方、只是微跌，股票端已转负——按判据「或」的逻辑，B 成立</span>。属性条目自本期移出观察池。</td><td class="text-center"><span class="tag tag-success">✅</span><br><span class="tag tag-gray">不计入</span></td><td class="text-left"><strong>反向条目的「作废」也是一种有效输出，其价值在于证明「股期联动」这个假设在 A 股端的传导是脆弱的。</strong>三日路径很干净：商品端连续七涨 → 微跌 0.20%，股票端 ＋2.35% → ＋0.79% → −0.88%。<span class="color-red">商品端的边际变化（＋1.01% → −0.20%）只有 1.2 个百分点，股票端却走了 3.2 个百分点并从正转负——股票端对商品端的定价是「提前量 ＋ 放大倍数」，一旦商品端停止上涨，股票端就会以更快的速度回吐</span>。这不是判据失灵，是「股期联动只在商品单边上行时成立」这一适用条件的确认。该属性不再续期，反向条目位置本期由新传感器接替（见六、P2-1）。</td></tr>
+</tbody>
+</table></div>
+<div class="alert-box alert-warning"><span>🧭</span><div><strong>本期闭环的方法论读数（第十八块拼图）：双分支穷尽结构使命中率失去区分度，真正的信息在「分支分布」。</strong>5 条计分条目 100% 命中，但其中 4 条走 B（跌停延续、银行断供、北纬崩塌、猪肉脱钩），只有 P0-3 走 A。这不是框架变准了，是市场单边。<span class="color-red">双分支判据的数学属性：A／B 互补穷尽、中性带只有 15 只（30—45）的宽度，任何单日读数几乎必然落进某一支——命中是结构决定的，不是预见力的证明</span>。<br><br>更有用的读法是「反向分支」：本期唯一走 A 的 P0-3（九阳地天板），恰恰是唯一一条与主轴（跌停＋广度＋防御）相反的条目，也是唯一给出「容器质量升级」这一正向结论的条目。<strong>当所有判据都指向同一方向时，那个指向反方向的答案，才是本期真正的信息。</strong>这与 10/23 第七块拼图（传感器同轴）同构，区别在于这次同轴的是「分支方向」而非「数据源」——<span class="color-red">修正方向不是换数据源，而是在清单里强制保留至少一条「预期走 A」的条目，并在闭环时单独读它的分支</span>。</div></div>
+</div>
+
+<div class="section">
+<div class="section-header sh-1"><span class="icon">🗺️</span> 一、题材全景：钱没有回来，只是换了一条链</div>
+<div class="alert-box alert-danger"><span>💥</span><div><strong>今日的第一因是「存量搬家」，不是「增量回流」。</strong>传媒（申万一级）<span class="signal-down">−55.29 亿</span> 净流出，同日半导体（申万二级）<span class="signal-up">＋29.63 亿</span>、电子（申万一级）<span class="signal-up">＋8.12 亿</span> 净流入——<span class="color-red">电子一级资金自 11/13 的 −214.18 亿、11/16 的 −223.19 亿之后首次转正，但转正的方式不是「钱回来了」，是「钱从传媒搬过来了」</span>。承接量级：半导体 ＋29.63 亿 对 传媒 −55.29 亿，承接率约 54%；电子一级 ＋8.12 亿 对 传媒 −55.29 亿，承接率仅 15%——<span class="color-red">一半的流出被半导体接走，另一半消失了</span>。<br><br>搬家的理由是三条催化同时落地：①晶圆代工涨价——芯片设计业内人士称已接获台积电等调价通知，涨幅 10% 至逾 20%，未调价则毛利率受影响 4—5 个百分点；②国产光刻机——进博会披露国产前道干式光刻机关键零部件国产化率突破 90%，成像性能与国际同类领先产品相当；③设备景气——SEMI 预测 2026 年全球半导体设备销售额 1659 亿美元（＋23.2%）、2028 年 2295 亿美元，SK 海力士 2026 年 1—9 月资本支出 31.22 万亿韩元已超 2025 年全年。<span class="color-red">三条催化的共同点：都是「行业级、月频或年频、不可当日证伪」的信息——它们支撑的是一个可以讲三个月的故事，不是一个可以兑现一天的价格</span>。</div></div>
+<div style="overflow-x:auto"><table>
+<thead><tr><th style="width:150px">方向</th><th style="width:96px">涨跌幅</th><th style="width:130px">主力资金</th><th style="width:64px">涨停</th><th>结构读数与定性</th></tr></thead>
+<tbody>
+<tr><td class="text-left font-bold">半导体材料／设备／光刻<br><span class="color-gray">（当日唯一主线，逆势）</span></td><td class="text-center"><span class="signal-up">半导体 ＋0.30%</span><br><span class="color-gray">电子化学品 ＋1.86%</span></td><td class="text-center"><span class="signal-up">＋29.63 亿</span><br><span class="color-gray">二级口径；电子一级 ＋8.12 亿</span></td><td class="text-center"><span class="signal-up">约 10</span></td><td class="text-left">佳先股份 30cm、国林科技／联合化学／卡莱特／清研环境／伟测科技 20cm，江化微、有研新材、西陇科学、海立股份、东方嘉盛、综艺股份、盛剑科技、永新光学 10cm；华虹宏力涨超 10%、中芯国际涨超 6%、北方华创涨超 4%、南大光电与长川科技涨超 7%。<strong>资金结构：有研新材单只 ＋14.89 亿（另一口径 13.83 亿）居全市场流入第一，占半导体板块流入的一半</strong>——<span class="color-red">板块流入高度集中在一只票上，这是「点状抢跑」而非「面状建仓」；概念口径亦同向：中芯国际概念 ＋41.04 亿、先进封装 ＋40.95 亿、OLED ＋36.24 亿、大基金持股 ＋28.68 亿</span></td></tr>
+<tr><td class="text-left font-bold">算力硬件／通信／存储<br><span class="color-gray">（第三段崩塌，但跌速收敛）</span></td><td class="text-center"><span class="signal-down">通信设备 −2.00%</span><br><span class="color-gray">元件 −2.64%</span></td><td class="text-center"><span class="signal-down">通信 −27.31 亿</span><br><span class="color-gray">元件 −20.32 亿</span></td><td class="text-center"><span class="signal-down">0</span></td><td class="text-left">中际旭创成交 204.75 亿居全市场第一但股价续跌（连续第三日下跌，未再创新低幅度小于前两日）；新易盛 −4%、天孚通信 −5%、生益科技 −4%、胜宏科技 −11.54%；长鑫科技 −5% 连续两日刷新上市新低、单日主力净流出 <span class="signal-down">−19.65 亿</span> 居全市场流出第一（另有两个口径 −22.47／−13.11 亿），澜起科技、东山精密、工业富联同列流出前列。<span class="color-red">关键背离：电子一级资金转正 ＋8.12 亿，但通信 −27.31 亿、元件 −20.32 亿——「电子」这个口径被半导体拉正，硬件三细分仍在失血</span></td></tr>
+<tr><td class="text-left font-bold">影视传媒／AI 漫剧<br><span class="color-gray">（放量跌停潮，题材死亡确认）</span></td><td class="text-center"><span class="signal-down">影视院线 −8.59%</span><br><span class="color-gray">广告营销 −6.37%</span></td><td class="text-center"><span class="signal-down">传媒 −55.29 亿</span><br><span class="color-gray">影视院线细分 −11.44 亿</span></td><td class="text-center"><span class="signal-down">0</span></td><td class="text-left">影视院线指数收 1158.51、<span class="color-red">放量下跌（成交 155.97 亿、换手 8.55%、振幅 7.41%，几乎全天单边）</span>，跌停群 14 只以上：北京文化、浙文影业、大晟文化、文投控股、横店影视、慈文传媒、欢瑞世纪、龙版传媒、新华传媒、华数传媒、粤传媒、湖北广电、电魂网络、思美传媒；华策影视跌超 13%、中国电影跌超 8%、光线传媒跌超 7%。<span class="color-red">最硬的一条读数：新华传媒公告拟发行股份收购上海界面财联社 100% 股权（构成重大资产重组），当日跌停——最硬的利好换不来一个红盘</span>。影视院线 PE（TTM）290 倍、年初至今 −13.69%、近 60 日 −23.06%</td></tr>
+<tr><td class="text-left font-bold">家电／泛消费低价群<br><span class="color-gray">（容器质量验证通过）</span></td><td class="text-center"><span class="signal-up">白色家电 ＋1.47%</span><br><span class="color-gray">家电 ETF 跟踪指数 ＋1.26%</span></td><td class="text-center"><span class="signal-up">＋6.24 亿</span><br><span class="color-gray">申万一级，居流入第二</span></td><td class="text-center"><span class="signal-up">4</span></td><td class="text-left">九阳股份地天板（＋10.02%、振幅 20%、换手 16.35%）、长虹美菱与小熊电器 2 连板、海立股份涨停、北鼎股份涨超 16%、阳光照明涨停（照明设备）；海尔智家涨超 2%、格力涨超 1%；白酒逆势（宝立食品、安井食品、洽洽食品、重庆啤酒、天味食品涨超 3%），白酒Ⅱ ＋2.41 亿、涨 1.47%。<span class="color-red">容器质量判据（九阳档位）今日给出 A＋ 反包档，是上期「质量未验证」的直接解除</span>；但涨停仍分散在厨电、白电、压缩机、照明、速冻食品五个细分，无统一叙事</td></tr>
+<tr><td class="text-left font-bold">银行／红利<br><span class="color-gray">（价格还在，钱走了）</span></td><td class="text-center"><span class="signal-up">银行 ＋0.31%</span><br><span class="color-gray">9 家创历史新高</span></td><td class="text-center"><span class="signal-down">−13.55 亿</span><br><span class="color-gray">申万一级；银行Ⅱ −13.54 亿</span></td><td class="text-center">0</td><td class="text-left">42 只成分 23 涨 13 跌，上海银行 ＋1.98%、沪农商行 ＋1.57%、苏州银行 ＋1.00% 领涨；工行、建行、中行、江苏、南京、杭州、长沙、成都、沪农商 9 家收盘价创历史新高；板块换手仅 0.33%、成交 361.85 亿、PE 6.87 倍、PB 0.55 倍。<span class="color-red">「9 家新高」配「−13.55 亿净流出」——上期是「7 家新高配 ＋0.85 亿」，本期连 0.85 亿都没有了。这是停泊资金的最后一根支柱断裂（规则 209）</span>。美的集团、长江电力仍小幅收高续创新高，红利侧同步但同样缩量</td></tr>
+<tr><td class="text-left font-bold">贵金属<br><span class="color-gray">（逆势，唯一的商品驱动）</span></td><td class="text-center"><span class="signal-up">＋1.84%</span><br><span class="color-gray">行业涨幅居前</span></td><td class="text-center"><span class="signal-up">＋3.82 亿</span><br><span class="color-gray">二级口径</span></td><td class="text-center"><span class="signal-up">1</span></td><td class="text-left">山金国际、赤峰黄金、恒邦股份、湖南黄金涨幅居前，为涨幅榜第二的行业方向。<span class="color-gray">贵金属的驱动来自商品端（金价）而非 A 股情绪，是本日唯一「传感器独立于主板情绪」的方向——下期反向属性条目由它接替（见六、P2-1）</span></td></tr>
+<tr><td class="text-left font-bold">华为算力／昇腾<br><span class="color-gray">（结构性韧性）</span></td><td class="text-center"><span class="signal-up">逆势</span><br><span class="color-gray">IT 服务 ＋3.61 亿</span></td><td class="text-center"><span class="signal-up">＋3.61 亿</span><br><span class="color-gray">IT 服务Ⅱ</span></td><td class="text-center"><span class="signal-up">3</span></td><td class="text-left">华胜天成 3 天 2 板、真视通与嘉环科技涨停。催化：华为云发布并开源昇腾原生具身世界模型 CloudRobo-WM1.2，昇腾云已覆盖 80% 中国具身智能企业。<span class="color-gray">与半导体材料同属「国产替代」大类，但载体是小市值软件股、无业绩弹性——按规则 204，其题材存亡由 IT 服务细分指数判定，今日该指数 −1.46% 却资金 ＋3.61 亿，指数与资金背离，暂不立项</span></td></tr>
+<tr><td class="text-left font-bold">物理 AI／人形机器人<br><span class="color-gray">（连续第二日杀跌）</span></td><td class="text-center"><span class="signal-down">自动化设备 −3.09%</span><br><span class="color-gray">汽车零部件 −2.69%</span></td><td class="text-center"><span class="signal-down">自动化设备 −17.02 亿</span><br><span class="color-gray">汽车零部件 −16.76 亿</span></td><td class="text-center"><span class="signal-down">0</span></td><td class="text-left">杰克科技、福莱新材跌停（连续第二日）；宇树科技、索辰科技、泛亚微透、上纬新材跌逾 10%。<span class="color-red">机器人链的杀跌与半导体材料的上涨同日发生，两者在「AI 硬件」这个大容器里互为替代——资金不是离开了 AI，是在 AI 内部从「讲故事的一端」搬到「有订单的一端」</span></td></tr>
+<tr><td class="text-left font-bold">稀土／小金属<br><span class="color-gray">（新增跌停方向）</span></td><td class="text-center"><span class="signal-down">小金属／稀土领跌</span></td><td class="text-center"><span class="signal-down">有色金属 −8.67 亿</span><br><span class="color-gray">申万一级</span></td><td class="text-center"><span class="signal-down">0</span></td><td class="text-left">中国稀土、中稀有色跌停，为今日跌停群中唯一非传媒、非机器人的成规模方向。<span class="color-gray">稀土此前是「出口管制」叙事的载体，与贵金属同属资源品但方向相反——资源品内部也在分化，说明驱动不是「资源涨价」这个总逻辑，是各自的商品价格</span></td></tr>
+<tr><td class="text-left font-bold">猪肉／养殖<br><span class="color-gray">（股期脱钩，属性作废）</span></td><td class="text-center"><span class="signal-down">养殖业 −0.88%</span><br><span class="color-gray">前值 ＋0.79%</span></td><td class="text-center"><span class="signal-down">农林牧渔 −5.40 亿</span><br><span class="color-gray">申万一级（本期已取得）</span></td><td class="text-center"><span class="signal-down">0</span></td><td class="text-left">生猪主力 9930 元／吨（−0.20%，前结算 9865、日内高 10050、低 9885、持仓减 666 手）；养殖业指数三日动能 ＋2.35%→＋0.79%→−0.88% 单调衰减至转负；行业资金 −5.40 亿（上期缺口已补齐）。<span class="color-gray">商品端仅微跌 0.20%、股票端跌 0.88% 并转负——放大倍数约 4.4 倍，是「股期联动只在商品单边上行时成立」的确认（见 P2-1）</span></td></tr>
+</tbody>
+</table></div>
+<div class="alert-box alert-info"><span>🔍</span><div><strong>题材全景的一句话总结：今天不是「没有热点」，是「热点被指定了」。</strong>全市场 4119 家下跌、77 只跌停，同时半导体材料链走出 10 只涨停、板块资金 ＋29.63 亿、有研新材单只吸金 14.89 亿。<span class="color-red">这种「普跌 ＋ 单点抱团」的形态，与 11/10 的「哑铃型」（高标孤岛＋首板海）不同：哑铃型是两端都有人、中间空，今天是只有一端有人、其余全空</span>。<br><br>三个细节值得记档：①<strong>承接率不足</strong>——传媒流出 55.29 亿，半导体只接走 29.63 亿（54%）、电子一级只接走 8.12 亿（15%），说明这不是轮动，是「部分搬家 ＋ 部分离场」；②<strong>催化全是长周期信息</strong>——晶圆代工涨价（季度级）、SEMI 设备预测（年度级）、国产化率 90%（产业级），没有一条是当日可兑现的；③<strong>涨的是材料与设备，不是设计与制造</strong>——华虹、中芯涨超 6%—10% 但未涨停，涨停全在材料端小票（江化微、西陇科学、国林科技、联合化学），<span class="color-red">这是「叙事需要载体、载体选最小市值」的经典结构，与 11/10 的短剧、11/13 的玄学是同一套定价机制，只是换了故事</span>。</div></div>
+</div>
+<div class="section">
+<div class="section-header sh-2"><span class="icon">🎯</span> 二、个股定位：容器验证通过日，与「高度」的第三次虚高</div>
+<div class="sub-note">本节只做定位，不产生买入建议。规则 168（天数板不计高度）、规则 197／208（缩量板不计高度、真实高度）、规则 184＋本期新增反包档、规则 205（T 字折价档）同时适用。</div>
+<div style="overflow-x:auto"><table>
+<thead><tr><th style="width:150px">标的</th><th style="width:190px">当日读数</th><th style="width:104px">定位</th><th style="width:56px">额度</th><th>折价与判定依据</th></tr></thead>
+<tbody>
+<tr><td class="text-left font-bold">九阳股份<br><span class="color-gray">002242／小家电＋「羊」字辈</span></td><td class="text-left"><span class="signal-up">＋10.02%</span> 收 31.52 封涨停；<span class="color-red">盘中最低 25.79（−9.98%）→ 涨停，振幅 20.0%，地天板</span>；换手 16.35%、成交 35.44 亿；收盘价即 52 周新高；PE（TTM）364 倍、PB 7.46</td><td class="text-center"><span class="tag tag-danger">容器顶层 · 反包档</span></td><td class="text-center">0</td><td class="text-left"><strong>上期「竞价一字 40 亿封单 → 尾盘炸板」之后，今日完成反向的一日转换：跌停区 → 涨停板。</strong>这是四档化设计里没有的形态——A 档「收红」是余温，A＋ 反包是新火，区分在换手：<span class="color-red">A 档收红通常缩量（承接盘不敢加），A＋ 反包必然高换手（多空同日完成换手）</span>，今日 16.35% 属后者。<strong>容器质量判据由此解除：泛消费低价群从「质量未验证」升为「质量验证通过」。</strong><span class="color-red">但验证通过不等于给额度——按规则 144，容器验证只解「质量存疑」这一个锁，不解「情绪冻结」这把锁；解冻三件套（广度 ≥40%、非 ST 跌停 ≤2、隔日溢价转正）今日仍是 23%／77／无源，冻结维持</span>。364 倍 PE ＋ 52 周新高 ＋ 20% 振幅，定价完全由筹码结构决定，任何基本面锚都不成立</td></tr>
+<tr><td class="text-left font-bold">北纬科技<br><span class="color-gray">002148／机器人＋GPU 参股</span></td><td class="text-left"><span class="signal-down">−7.31%</span> 收 8.11；<span class="color-red">换手 42.76%、成交 16.03 亿</span>；日内最高 8.77（＋0.23%）、最低 7.88（−9.94%）、振幅 10.17%；开盘 8.58（−1.94%）</td><td class="text-center"><span class="tag tag-danger">崩塌 · 折价解除失败</span></td><td class="text-center">0</td><td class="text-left"><strong>上期 T 字折价档的次日答案：不是续板、是崩塌。</strong>折价解除条件写的是「换手板续板」——今日换手 42.76% 远超门槛，方向却向下，<span class="color-red">说明「换手」这个条件本身需要加方向：高换手只证明「有人在换」，不证明「换进来的人在接」</span>。42.76% 的换手配 −7.31%，是「接力盘全部换手一遍后无人抬价」的形态，比缩量跌停更彻底——缩量跌停说明没人卖得出去，巨量下跌说明卖得出去且都在卖。<strong>该标的的教训：T 字板（惊险回封）＋次日巨量下跌＝折价档的正确结局，上期「折价解除」的路径设计过于乐观</strong></td></tr>
+<tr><td class="text-left font-bold">华东重机<br><span class="color-gray">002685／算力芯片＋机器人</span></td><td class="text-left"><span class="signal-up">＋10.02%（3 连板）</span> 收 6.70，<span class="color-red">一字板、振幅 0.00%</span>；换手仅 <span class="color-red">3.38%</span>、成交 <span class="color-red">2.28 亿</span>；为昨日 11 只连板中唯一晋级者</td><td class="text-center"><span class="tag tag-gray">标称最高板 · 不计高度</span></td><td class="text-center">0</td><td class="text-left"><strong>规则 197 立条后的第一次实战：换手 3.38% ＜5%、成交 2.28 亿 ＜3 亿，两项同时低于门槛——按该规则不计入市场高度。</strong><span class="color-red">把它从高度里剔除后，市场真实高度＝2 板（小熊电器、长虹美菱、顺钠股份、北投科技，4 只并列），梯队已经归零到 2 板，而不是「3 板」</span>。这是本轮退潮最容易被误读的一个数：如果只看「最高 3 板」，会认为高度只是从 4 降到 3；看真实高度，是从 4 降到 2、且 2 板层只有 4 只且互不相关（家电 2 只、电力设备 1 只、广电 1 只）。<strong>一字板的无量封板测的是「卖盘意愿」，不是「买盘意愿」——没人卖不等于有人买</strong></td></tr>
+<tr><td class="text-left font-bold">有研新材<br><span class="color-gray">600206／半导体材料</span></td><td class="text-left"><span class="signal-up">＋10.01% 涨停</span>；主力净流入 <span class="signal-up">＋14.89 亿</span>（另一口径 13.83 亿）<strong>居全市场第一</strong>；龙虎榜净买 <span class="signal-up">2.62 亿</span>（占成交 5.51%）；换手 14.51%</td><td class="text-center"><span class="tag tag-warning">单点吸金 · 抢跑载体</span></td><td class="text-center">0</td><td class="text-left"><strong>全市场流入第一的个股，单只占半导体板块（＋29.63 亿）流入的一半——这是「点状抢跑」而非「面状建仓」。</strong>龙虎榜净买 2.62 亿占总成交 5.51%，属「大资金主导但不控盘」的中性结构（对比派发式的净卖占比 8.98%）。<span class="color-red">风险在于催化的时间属性：晶圆代工涨价是季度级信息、SEMI 预测是年度级信息，两者都无法在明日被证伪——不可证伪的催化最容易被用来做「抢跑」，也最容易在事件落地（11/18 凌晨财报）后一次性回吐</span>。按规则 198，今日的上涨只记「预期博弈」，不作事件定价</td></tr>
+<tr><td class="text-left font-bold">阳光照明<br><span class="color-gray">600261／照明＋「羊」字辈玄学</span></td><td class="text-left"><span class="signal-up">＋10.04%</span> 收 5.70 封涨停；<span class="color-red">盘中最低 4.84（−6.56%）→ 涨停，振幅 16.6%</span>；换手 26.68%、成交 18.92 亿；<span class="color-red">14 天 8 板（另一口径 16 天 8 板）</span></td><td class="text-center"><span class="tag tag-gray">玄学残余 · 反抽</span></td><td class="text-center">0</td><td class="text-left"><strong>放量反包带动「玄学字辈」个股开盘跌停后集体打开，但多数随后再度回封跌停——这是「打开≠承接」的当日实证。</strong><span class="color-red">上期玄学容器已按规则 193 观测终止（工作函下发即终止），今日的涨停不构成复辟证据：它发生在跌停群最密集的一天，本质是「清算端的自救」，不是「叙事端的复活」</span>。按规则 168，14 天 8 板为天数板表述，不计连板高度。该标的只作「情绪温度计」——它涨得越猛、同时跌停越多，说明容器残余越不健康</td></tr>
+<tr><td class="text-left font-bold">中际旭创<br><span class="color-gray">300308／CPO 光模块</span></td><td class="text-left">成交 <span class="signal-down">204.75 亿</span>居全市场第一；股价续跌（第三日）；连续多日刷新阶段新低</td><td class="text-center"><span class="tag tag-danger">叙事未闭环 · 整月不评估</span></td><td class="text-center">0</td><td class="text-left"><strong>全市场最大的成交配合最大的分歧，已连续三日。</strong>电子一级资金今日转正 ＋8.12 亿，但旭创仍在流出前列——<span class="color-red">「电子转正」与「旭创续跌」并存，正是规则 206 要处理的形态：口径转正由子集拉动，不代表板块修复</span>。叙事闭环的钥匙在 11/18 凌晨的财报（规格升级是否重申、新管理层表态、大客户资本开支指引三条），今日只记读数</td></tr>
+<tr><td class="text-left font-bold">长鑫科技<br><span class="color-gray">／DRAM 存储</span></td><td class="text-left"><span class="signal-down">−5% 以上</span>，连续两日刷新上市新低；主力净流出 <span class="signal-down">−19.65 亿</span>居全市场第一（另有 −22.47／−13.11 亿两个口径）</td><td class="text-center"><span class="tag tag-danger">存储崩塌延续</span></td><td class="text-center">0</td><td class="text-left"><strong>与半导体材料的上涨完全相反：存储是「有价格、有产能、有周期」的环节，材料是「有叙事、有国产化率、无当期业绩」的环节。</strong><span class="color-red">同一天里，同一个「半导体」标签下，资金买入「不可证伪的国产化故事」、卖出「可证伪的存储价格周期」——这不是板块行情，是叙事偏好的切换</span>。三口径差异 9.36 亿，未统一，取方向一致</td></tr>
+<tr><td class="text-left font-bold">新华传媒<br><span class="color-gray">600825／出版＋AI 内容</span></td><td class="text-left"><span class="signal-down">跌停</span>；当日公告<span class="color-red">拟发行股份收购上海界面财联社科技 100% 股权，构成重大资产重组及关联交易</span>（审计评估未完成，尚需股东大会与监管批准）</td><td class="text-center"><span class="tag tag-danger">题材死亡确认</span></td><td class="text-center">0</td><td class="text-left"><strong>最硬的利好换不来一个红盘——这是题材级死亡的确证，不是个股事件。</strong>重大资产重组是 A 股最强的单股催化之一，在正常市况下至少给一个一字板；<span class="color-red">它换来的是跌停，说明卖压不来自「这只股票贵不贵」，来自「这个题材还成不成立」——当定价体系本身被否定时，个股逻辑不再有效（规则 210）</span>。该标的归入传媒题材的整体作废，不作个案观察</td></tr>
+</tbody>
+</table></div>
+<div class="alert-box alert-warning"><span>⚠️</span><div><strong>个股层的三个「反常识」读数，比涨跌本身重要：</strong><br><br>①<strong>换手 42.76% 的下跌比缩量跌停更坏。</strong>北纬科技用一天时间把 42.76% 的流通盘换了一遍，价格还跌了 7.31%——<span class="color-red">缩量跌停意味着「想卖的人卖不掉」，巨量下跌意味着「想卖的人全卖掉了，接的人立刻被套」</span>。后者对筹码结构的破坏是前者数倍。<br><br>②<strong>一字板的 3.38% 换手，是「没人卖」而不是「有人买」。</strong>华东重机的 2.28 亿成交额，只够一只中等市值票的半小时成交——它封住 3 板靠的是「卖盘不出」，不是「买盘涌入」。<span class="color-red">这种板在退潮期的次日路径高度不确定：卖盘一旦决定出来，承接厚度不足以支撑第二次封板</span>。<br><br>③<strong>20% 振幅的地天板，是当日情绪最贵的读数。</strong>九阳从 −9.98% 到 ＋10.02%，一天之内走完「清算」与「定价」两件事，代价是 16.35% 的换手与 35.44 亿成交。<span class="color-red">这种形态出现时，市场不是「转好」也不是「转坏」，而是「把分歧一次性用完」——次日若不能续板，说明分歧没用完，还要再来一次</span>。</div></div>
+</div>
+
+<div class="section">
+<div class="section-header sh-3"><span class="icon">⚠️</span> 三、风险澄清与异动监控</div>
+<div class="sub-note">本节只列事实与判定，不作推荐。含退市风险、立案调查、停牌、要约收购、重组与回购授信六类，以及本期识别的三处口径冲突。</div>
+<div style="overflow-x:auto"><table>
+<thead><tr><th style="width:150px">标的／事项</th><th style="width:250px">公告或读数</th><th style="width:96px">风险级别</th><th>判定与处置</th></tr></thead>
+<tbody>
+<tr><td class="text-left font-bold">山鹰国际<br><span class="color-gray">600567</span></td><td class="text-left">11/16 收盘 0.94 元，<span class="color-red">首次低于 1 元</span>，存在终止上市风险（连续 20 个交易日低于 1 元即触发）；<strong>实控人、董事长吴明武因涉嫌内幕交易和短线交易被证监会立案</strong>；当日 <span class="signal-down">−9.57%</span></td><td class="text-center"><span class="tag tag-danger">退市＋立案</span></td><td class="text-left"><strong>双风险叠加，属「不可交易」类别。</strong>面值退市是机械条款（20 个交易日），立案调查是刑事级不确定性——<span class="color-red">两者叠加时，任何价格反弹都不构成参与理由：退市条款是时间函数，立案是事件函数，都不由价格决定</span>。归入永久排除名单（与 ST、南卫股份同级）</td></tr>
+<tr><td class="text-left font-bold">金科股份<br><span class="color-gray">000656</span></td><td class="text-left">收盘价 0.97 元，<span class="color-red">低于 1 元</span>，存在因股价低于面值被终止上市的风险；当日<span class="signal-down">跌停</span></td><td class="text-center"><span class="tag tag-danger">面值退市</span></td><td class="text-left">与山鹰同属面值退市类别，地产链。不参与、不观察、不进清单</td></tr>
+<tr><td class="text-left font-bold">*ST 英飞<br><span class="color-gray">002528</span></td><td class="text-left">董事会通过与预重整管理人及四家投资人签署重整投资协议之补充协议（二）：以 2.61 元／股认购转增股票 9.29 亿股、投资款约 <span class="signal-up">24.26 亿元</span>；牵头投资人湖南国科控股认购 5.03 亿股、出资 13.14 亿，承诺 60 个月内不转让、自有资金不低于投资额 50%</td><td class="text-center"><span class="tag tag-warning">重整推进</span></td><td class="text-left">重整投资落地属实质性进展，但标的为 ST 股，按既有规则「ST 永久排除」不参与。<span class="color-gray">记档理由：它是「半导体资产借壳 ST」的又一案例，与艾为电子停牌收购钰泰同属「半导体资产证券化」这条暗线</span></td></tr>
+<tr><td class="text-left font-bold">艾为电子<br><span class="color-gray">688798</span></td><td class="text-left">筹划发行股份及支付现金购买钰泰半导体控股权，<span class="color-red">自 11/10 起停牌，预计不超 10 个交易日</span>；艾为转债同步停牌并暂停转股；当日发布停牌进展公告，交易继续推进</td><td class="text-center"><span class="tag tag-warning">停牌中</span></td><td class="text-left">停牌第 6 个交易日，接近 10 个交易日上限。<span class="color-red">复牌时点可能落在本周内，是本周年内少见的「半导体资产注入」事件，但其定价与大盘情绪无关，不构成板块催化</span></td></tr>
+<tr><td class="text-left font-bold">上海亚虹<br><span class="color-gray">603159</span></td><td class="text-left">飞科投资要约收购 10.21% 股份（1429.4 万股、21.43 元／股、约 3.06 亿元），<span class="color-red">要约期 11/19—12/18</span>；此前已受让 29.99% 完成过户，若足额完成持股升至 40.20%</td><td class="text-center"><span class="tag tag-info">要约收购</span></td><td class="text-left">要约价 21.43 元不低于前 30 个交易日均价 21.16 元与前 6 个月最高价 21.43 元，属「平价要约」。<span class="color-gray">此类事件的价格由要约条款锁定，与情绪周期无关，不进清单</span></td></tr>
+<tr><td class="text-left font-bold">胜宏科技<br><span class="color-gray">300476／PCB</span></td><td class="text-left">拟回购 1.5—3 亿元，同时向多家银行申请合计 <span class="color-red">707 亿元授信</span>；当日 <span class="signal-down">−11.54%</span> 收 109.02 元</td><td class="text-center"><span class="tag tag-danger">回购失效样本</span></td><td class="text-left"><strong>回购 ＋ 巨额授信双利好，换来 −11.54%。</strong><span class="color-red">这是「产业资本定价」与「交易盘定价」分歧的第三个样本（前两个：11/16 天孚回购 6550 万仍跌超 11%、11/13 七家回购未能延缓下跌）——回购在叙事崩塌期不构成止跌信号，只构成「公司认为便宜」的单方面表态</span>。707 亿授信是扩产信号，在存储与 PCB 价格周期下行期，扩产＝资本开支压力，市场按利空读</td></tr>
+<tr><td class="text-left font-bold">光启技术<br><span class="color-gray">002625</span></td><td class="text-left">子公司签订 <span class="signal-up">17.9 亿元</span>超材料航空结构产品销售合同，占 2025 年主营业务收入 <span class="color-red">87.52%</span></td><td class="text-center"><span class="tag tag-info">大额合同</span></td><td class="text-left">单笔合同占上年主营 87.52%，属实质性订单。<span class="color-gray">但超材料／军工方向连续多日走弱（军工电子 −1.77% 但资金 ＋2.17 亿，方向背离），单股订单不改变板块定价</span></td></tr>
+<tr><td class="text-left font-bold">高位股连续跌停群<br><span class="color-gray">玄学容器残余</span></td><td class="text-left">大东方、襄阳轴承、闽发铝业、青岛食品<span class="color-red">连续 3 个交易日跌停</span>；东方环宇、日出东方、锋龙股份此前已跌停；天普股份停牌核查中</td><td class="text-center"><span class="tag tag-danger">连续跌停</span></td><td class="text-left"><strong>连续 3 日跌停是「筹码彻底锁死」的形态：第一个跌停是分歧，第二个是恐慌，第三个是流动性消失。</strong><span class="color-red">这批标的自 11/16 起已按规则 193 观测终止，今日的连续跌停不产生新的判据，只确认终止的正确性</span>。青岛食品另有青啤集团受让 29.24% 成为控股股东（实控人变更为青岛市国资委）的重组背景，但股价仍连续跌停——重组预期无法对抗流动性清算</td></tr>
+</tbody>
+</table></div>
+<div class="alert-box alert-danger"><span>🚨</span><div><strong>本期识别的三处口径冲突（均已并列，未自行统一）：</strong><br><br>①<strong>电子一级 ＋8.12 亿 对 半导体二级 ＋29.63 亿</strong>——前者是申万一级（含半导体、元件、光学光电子、消费电子、电子化学品五个二级），后者只是其中一个二级。<span class="color-red">差额 21.51 亿由「元件 −20.32 亿 ＋ 消费电子 −11.19 亿 ＋ 光学光电子 ＋9.40 亿 ＋ 电子化学品 ＋3.50 亿」等正负相抵形成——同一时点，「电子转正」与「元件崩塌」同时为真</span>。判定侧按规则 171 写死申万一级（＋8.12 亿），二级只作结构读数。<br><br>②<strong>影视院线 −8.59%（申万二级指数）对 −9.02%（板块涨跌幅口径）</strong>——前者是成分加权指数，后者是板块内个股涨跌幅的算术统计，样本与权重不同。本期取指数口径 −8.59%（与规则 204 的「题材存亡由细分指数判定」一致），另一口径并列。<br><br>③<strong>长鑫科技净流出三口径：−19.65／−22.47／−13.11 亿</strong>，最大差 9.36 亿（约 1.7 倍）。方向一致（均为大额流出），量级不可比。本期取 −19.65 亿（东财口径，与「90 只净流出超 1 亿」同源），另两口径并列不采用。<br><br><strong>另有一处「数据打架但方向可判」：</strong>生猪期货有媒体称「跌超 2%」，大商所主力合约收盘 9930 对前结算 9865 实为 −0.20%——差异源于合约月份与计价基准不同，以交易所主力合约为准。</div></div>
+<div class="alert-box alert-info"><span>📌</span><div><strong>风险监控的一句话结论：今天的风险不在「跌」，在「流动性分层」。</strong>一边是山鹰、金科两只面值退市股（价格已进入机械条款区）、大东方等 4 只连续 3 日跌停（流动性消失），另一边是九阳 20% 振幅的地天板、北纬 42.76% 换手的崩塌——<span class="color-red">同一个市场里，「卖不出去」与「换得太快」同时发生，这是资金总量收缩到一定程度后必然出现的两极形态</span>。ETF 尾盘的历史天量（创业板 ETF 广发 50 亿）说明被动资金在托指数，但它托的是「一篮子」，托不住「单只」——<span class="color-red">这就是「指数体面、账户难看」的机制解释，也是本期定性把「被动托底」单列为一个读数的原因</span>。</div></div>
+</div>
+<div class="section">
+<div class="section-header sh-4"><span class="icon">🧩</span> 四、复盘核心逻辑框架</div>
+<div class="sub-title">① 定性切换：从「买盘消失」到「单向搬家」——同一条退潮，换了发动机</div>
+<div class="alert-box alert-danger"><span>🔄</span><div><strong>上期定性「缩量普跌深化 · 买盘消失型退潮」，本期必须换掉「买盘消失」这四个字。</strong>证据是三条同日出现的读数：<span class="color-red">半导体（申万二级）＋29.63 亿、电子（申万一级）＋8.12 亿、有研新材单只 ＋14.89 亿居全市场第一</span>——买盘没有消失，它只是换了一条链。但也不能叫「修复」，因为：<br><br>· 承接率不足——传媒 −55.29 亿，半导体只接走 29.63 亿（54%）、电子一级只接走 8.12 亿（15%），<span class="color-red">一半的流出被接走、另一半消失了</span>；<br>· 广度未改善——上涨 1326 家、占比 23%，较上期 20% 只回升 3 个百分点，仍在 25% 以下；<br>· 跌停创新高——77 只（非 ST）为本轮最高，含 ST 84 只；<br>· 量能续缩——14577 亿，连续第三日 ＜1.5 万亿；<br>· 杠杆续退——融资余额 22283.75 亿、单日 <span class="signal-down">−214.10 亿</span>，连续两日净偿还且金额较前值（−165.44 亿）放大 1.29 倍。<br><br><strong>所以本期定性为：缩量新低 · 单向搬家型退潮（半导体材料接棒内容链 ＋ 防御资金断供）。</strong><span class="color-red">关键词从「消失」改成「搬家」，含义是：退潮仍在继续（跌停新高、量能续缩、杠杆续退），但退潮的形态从「全面失血」变成「结构性抽离」——清算端与被选中端同时存在，且被选中端只有一个</span>。这个改动直接影响仓位判断：如果是「买盘消失」，任何方向都不该参与；如果是「搬家」，唯一该讨论的是「搬去的那一端能不能持续」，而它的持续性今晚就有答案。</div></div>
+
+<div class="sub-title">② 三层读数拆解：三层首次同向，但「结构层」内部裂成两半</div>
+<div style="overflow-x:auto"><table>
+<thead><tr><th style="width:96px">层级</th><th style="width:110px">本期读数</th><th style="width:110px">上期读数</th><th style="width:86px">方向</th><th>判读</th></tr></thead>
+<tbody>
+<tr><td class="text-left font-bold">情绪层</td><td class="text-center"><span class="signal-down">冻结（第三日）</span></td><td class="text-center"><span class="signal-down">冻结</span></td><td class="text-center"><span class="color-red">同向</span></td><td class="text-left">涨停 37（↑4）、跌停 77（↑9）、封板率 65%（↓2 个百分点）、炸板 20、连板 6（↓5）、晋级率 9.09%（↓33.77 个百分点）、真实高度 2 板（↓2）。<span class="color-red">晋级率从 42.86% 崩到 9.09%，是本期情绪层最剧烈的一次读数——但注意上期分母只有 7 只（虚高），本期分母 11 只，两个数的可比性有限</span>。解冻三件套：广度 23%（＜40%）、非 ST 跌停 77（＞2）、隔日溢价无源——<strong>两条深度反向、一条无法判定，按规则 127／172 取最保守：冻结维持</strong></td></tr>
+<tr><td class="text-left font-bold">资金层</td><td class="text-center"><span class="signal-down">净抽离（但出现单点流入）</span></td><td class="text-center"><span class="signal-down">净抽离</span></td><td class="text-center"><span class="color-red">同向</span></td><td class="text-left">申万一级：仅 4 个行业净流入（电子 ＋8.12、家电 ＋6.24、美容护理 ＋1.87、综合 ＋0.08），28 个净流出，流出前三传媒 −55.29、通信 −27.31、机械设备 −25.61。<span class="color-red">流入端合计 16.31 亿 对 流出端合计约 −292 亿（前三行业），承接比约 5.6%——这不是轮动，是净抽离</span>。个股层：净流入超 1 亿 56 只、净流出超 1 亿 90 只，家数比 0.62:1，金额端有研新材 ＋14.89 亿 对 长鑫科技 −19.65 亿</td></tr>
+<tr><td class="text-left font-bold">结构层</td><td class="text-center"><span class="signal-down">分化加剧（内部裂开）</span></td><td class="text-center"><span class="signal-down">背离</span></td><td class="text-center"><span class="color-red">同向</span></td><td class="text-left">指数：沪指 −0.50% 对创业板 −1.20%，差 0.70 个百分点（＜2.5 门槛，规则 199 不触发「结构性」表述）；但<span class="color-red">科创50 ＋0.62% 对创业板 −1.20%，差 1.82 个百分点，且科创50 盘中一度 ＋3%——「科技内部两种定价」比「主板对创业板」更极端</span>。行业层：半导体 ＋0.30% 对 通信设备 −2.00%／元件 −2.64%；影视院线 −8.59% 对 贵金属 ＋1.84%。<strong>三层同向（都指向退潮），但结构层内部裂成「材料／设备」与「硬件／内容」两半，这是本期唯一的多头线索</strong></td></tr>
+</tbody>
+</table></div>
+<div class="alert-box alert-warning"><span>🔬</span><div><strong>规则 167（双层定性禁止合并）在本期的正确用法：不是「三层一致」，而是「三层一致地下跌、但结构层内部不一致」。</strong>把它拆成两句话说：<span class="color-red">情绪层与资金层一致指向「退潮继续」；结构层指向「退潮的方式在变」——从「一起跌」变成「一半跌、一半涨」</span>。这两句不能合并成「市场不好」一句，因为它们对明日的预测含义完全相反：前者说「别参与」，后者说「有一个方向值得看财报」。<br><br>新出现的第五个读数：<strong>被动托底</strong>。尾盘多只宽基 ETF 集中放量——创业板 ETF 广发（159952）成交额突破 50 亿、较昨日全天增超 1.6 倍、创历史天量；沪深300ETF 华泰柏瑞、中证1000ETF 南方、中证500ETF 南方 15 分钟内均成交超 15 亿；全市场 ETF 成交 4946 亿、仅 440 余只收涨。<span class="color-red">这是「指数跌幅收窄（−0.87% → −0.50%）而个股跌得更惨（跌停 68 → 77）」的机制解释：被动资金买的是篮子，托的是指数，不托单只</span>。规则 212 由此立条：ETF 尾盘集中放量只改善指数、不改善广度，此时的「指数跌幅收窄」不得读作「情绪修复」。</div></div>
+
+<div class="sub-title">③ 本期三个关键矛盾（都是「两个读数方向相反」）</div>
+<div class="logic-grid">
+<div class="logic-card" style="border-left:4px solid #e63946"><strong>矛盾一：电子一级资金转正（＋8.12 亿）对 通信与元件续流出（−27.31／−20.32 亿）。</strong>「电子」是一个五合一的宽口径，半导体一个二级（＋29.63 亿）就足以把它拉正，而元件、消费电子分别 −20.32／−11.19 亿。<span class="color-red">这正是 11/13 上期闭环里写下的那句话的反面：「口径即判据」——同一个「电子」，用一级看是修复，用二级看是崩塌</span>。处置：规则 206——子集转正不构成整体解冻，电子整月不评估的判定维持；半导体二级单列观察（见五）。</div>
+<div class="logic-card" style="border-left:4px solid #e67e22"><strong>矛盾二：银行 9 家创历史新高 对 银行资金 −13.55 亿。</strong>价格侧是教科书级的防御形态（23 涨 13 跌、9 家新高、PE 6.87、PB 0.55），资金侧却由正转负——<span class="color-red">上期是「7 家新高配 ＋0.85 亿」，本期连 0.85 亿都没有了</span>。处置：规则 209——防御属性在「价格—资金背离」时以资金为判定侧。停泊兑现，属性降为「单日避险」，评估资格作废。<strong>这条的实战意义：如果昨天按「银行还在涨」去配防御 ETF，今天买到的是一个「价格新高、资金流出」的头寸——正是 11/13 那条「判据对、行动错」教训的镜像。</strong></div>
+<div class="logic-card" style="border-left:4px solid #8e44ad"><strong>矛盾三：跌停 77 只创新高 对 涨停 37 只回升、广度 23% 回升。</strong>三个读数同时变「多」，比值 2.06 → 2.08 几乎不动。<span class="color-red">这意味着退潮没有加深，是分裂：清算端扩容、被选中端也扩容</span>。处置：规则 207——跌停与涨停同向上升＝结构性清算，定性写「分化」，仓位判据以涨跌停比为准（今日 2.08，仍 ＞2，属「清算占优」）。<strong>这条修正了一个长期误读：过去凡见跌停新高就写「恶化」，实际上「跌停新高＋涨停回升」与「跌停新高＋涨停萎缩」是两种完全不同的市场——前者有一半的钱在找方向，后者只有一半的钱在逃跑。</strong></div>
+</div>
+
+<div class="sub-title">④ 情绪周期定位（最重要的一块）</div>
+<div style="overflow-x:auto"><table>
+<thead><tr><th style="width:92px">日期</th><th style="width:170px">定性</th><th style="width:120px">涨停／跌停</th><th style="width:96px">最高板</th><th style="width:136px">成交</th><th>关键读数</th></tr></thead>
+<tbody>
+<tr><td>11/09（周一）</td><td>退潮中继 · 抱团瓦解前哨</td><td>54／2</td><td>6 板（惊险回封）</td><td>1.4826 万亿缩量 1752 亿</td><td class="text-left">晋级率 9.09% 闭环最低；连板 11 → 9、「东方」字辈占一半；断板计数 10；电子资金回正 ＋91.28 亿</td></tr>
+<tr><td>11/10（周二）</td><td>缩量情绪强修复 · 哑铃型结构</td><td><span class="signal-up">95／0</span></td><td>7 板（尾盘首封）</td><td>1.5048 万亿放量 222 亿</td><td class="text-left">广度 40% → 76%；封板率 55% → 83%；晋级率 50%（分母扩张记虚高）；连板 10 → 19；电子＋传媒双主线</td></tr>
+<tr><td>11/11（周三）</td><td>放量高低切换 · 情绪层让位机构层</td><td>85／3</td><td>4 板（严格口径）</td><td>1.6763 万亿放量 1715 亿</td><td class="text-left">创业板 ＋3.11%／上证50 −0.27%；晋级率 35%、高度 7 → 4；隔日溢价 ＋2.89%；电子第三日 ＋176.39 亿；仓位 0.25 → 0.15</td></tr>
+<tr><td>11/12（周四）</td><td>放量缩容退潮 · 接力层冻结（防御独木桥）</td><td><span class="signal-down">37</span>／<span class="signal-down">5—6</span></td><td>5 板（玄学容器）</td><td>1.9321 万亿放量 2558 亿</td><td class="text-left">创业板 −2.44% 冲高回落；晋级率 31.57%；封板率 82% → 51%；隔日溢价 −0.87% 转负；广度 15.7%；电子 −80.67 亿反向 257 亿冻结；跌停群失效线＋广度条款双触发全平</td></tr>
+<tr><td>11/13（周五）</td><td>缩量普跌 · 单极防御（算力硬件叙事崩塌）</td><td><span class="signal-down">38</span>／<span class="signal-down">34—39</span></td><td><span>4 板（缩量 1.83%，不计高度）</span></td><td><span class="signal-down">1.6557 万亿缩量 2764 亿</span></td><td class="text-left">英伟达黄仁勋辞任触发；创业板 −3.32%／上证50 ＋0.11%；跌停 5 → 34 放大约 5.7 倍；广度 13.7%；晋级率 27.27%、连板 11 → 7；电子 −214.18 亿反手线穿越；5 板双雄全断；仓位维持 0 成</td></tr>
+<tr><td>11/16（周一）</td><td>缩量普跌深化 · 买盘消失型退潮（防御单极＋低价抱团）</td><td><span class="signal-down">33</span>／<span class="signal-down">68（非 ST 60—63）</span></td><td><span class="signal-down">4 板（T 字折价档）</span></td><td><span class="signal-down">1.4845 万亿缩量 1712 亿</span></td><td class="text-left">跌停对涨停反超近 2 倍；广度 20% 连续第三日超 4300 家下跌；九阳竞价一字 40 亿封单尾盘炸板；玄学容器 6 只 2 连跌停；天普停牌核查；电子 −223.19 亿穿越失效线（整月不评估）；融资 −165.44 亿转净偿还；银行 7 只新高但上证50 转绿</td></tr>
+<tr><td class="font-bold">11/17（周二）</td><td class="font-bold color-red">缩量新低 · 单向搬家型退潮（半导体材料接棒 ＋ 防御断供）</td><td><span class="signal-down">37</span>／<span class="signal-down">77（含 ST 84）</span></td><td><span class="color-red">真实 2 板（标称 3 板为一字不计）</span></td><td><span class="signal-down">1.4577 万亿缩量 268 亿</span></td><td class="text-left">三大指数同创年内新低（沪指 8/5 以来新低）；跌停 77 创新高而涨停 33→37、广度 20%→23%；晋级率 42.86% → 9.09%；传媒 −55.29 亿 → 半导体 ＋29.63 亿、电子一级 ＋8.12 亿转正；有研新材 ＋14.89 亿居首；银行 9 家新高却 −13.55 亿（停泊兑现）；九阳地天板（振幅 20%、换手 16.35%）；北纬 −7.31% 换手 42.76%；融资 −214.10 亿连续 2 日、放大 1.29 倍；ETF 创业板 50 亿历史天量护指数；科创50 ＋0.62% 逆势；沪指盘中 3565.59 击穿 52 周低点后收回</td></tr>
+</tbody>
+</table></div>
+<div class="alert-box alert-info"><span>📍</span><div><strong>周期定位：十六日路径「出清深化 → 广度复位 → 贝塔反转 → 修复续期 → 修复终结 → 退潮中继 → 情绪强修复 → 高低切换 → 放量缩容退潮 → 缩量普跌·单极防御 → 买盘消失型退潮 → <span class="color-red">单向搬家型退潮</span>」。</strong><br><br>当前位置的三个读数：<br>①<strong>跌停 77 只为本轮最高，但涨停同步回升到 37 只</strong>——单项看是恶化，两项合看是分裂。这标定了位置：<span class="color-red">退潮已走到「清算与建仓同时进行」的阶段，这个阶段在时间上通常不长（要么被选中端失败变成全面崩塌，要么被选中端成功变成修复起点），今晚的财报是分水岭</span>。<br>②<strong>真实高度 2 板，是本轮最低</strong>——比 11/13 的「4 板缩量」更低，因为那一次至少还有成交（天普 1.79 亿但真实高度取 3 板），这一次的最高标称板连成交都不足。梯队的读数已经归零，接力层没有任何讨论空间。<br>③<strong>杠杆连续两日净偿还且放大</strong>——−165.44 → −214.10 亿，放大 1.29 倍。上期说「重估须待净偿还收敛」，今日不但没收敛，恶化了 29%。<span class="color-red">杠杆开关关闭的状态从「刚关闭」进入「确认关闭」，且新增一个风险读数：如果明日再出 −200 亿级，两融余额将跌破 2.2 万亿，那是一个新的心理关口</span>。<br><br>与 11/10 的对照（同样出现「结构分化＋单点抱团」）：11/10 是「95 涨停／0 跌停」的哑铃型，两端都有人；今日是「37 涨停／77 跌停」的单极型，只有一端有人。<span class="color-red">哑铃型是修复的形态，单极型是退潮的形态——同样是分化，方向相反。区别在跌停数：0 对 77</span>。<br><br><strong>仓位 0 成维持。本期无降档（已归零），也无可升档方向——唯一出现「半成立」状态的是半导体材料链，但它是财报前的抢跑（规则 198），在事件落地前不构成任何额度依据。</strong></div></div>
+
+<div class="sub-title">⑤ 外生变量与催化日历：48 小时内的唯一裁决者</div>
+<div class="logic-grid">
+<div class="logic-card" style="border-left:4px solid #e63946"><strong>今晚：英伟达 FY2027 Q3 财报（美东 11/17 盘后＝北京时间 11/18 凌晨）。</strong>这是本周、也是本轮退潮唯一的裁决者。上期已把判定标准写死为三条：①规格升级节奏是否被重申（Rubin 路线）；②新管理层的表态与背景（黄仁勋辞任后的交接是否清晰）；③大客户资本开支指引。<span class="color-red">三条里任意一条正面 → 电子／通信的「叙事崩塌」定性进入重估程序；三条全无 → 按「假设未修复」继续定价</span>。按规则 198，今日 A 股半导体材料的上涨只是「预期博弈」，<strong>不得作为事件定价依据；真正的判定在 11/18（周三）</strong>。今日科创50 盘中 ＋3%、收 ＋0.62%，就是这个博弈的价格。</div>
+<div class="logic-card" style="border-left:4px solid #2ecc71"><strong>反向风险：如果财报超预期，今天涨的这批票反而可能不涨。</strong>因为今日的上涨已经把「超预期」提前定价了一部分——有研新材单只吸金 14.89 亿、科创50 盘中 ＋3%。<span class="color-red">「利好落地即出货」在 A 股是高概率路径，尤其是当利好在落地前已被交易过一轮时</span>。判定方法：看 11/18 的高开幅度与回落幅度——高开 ＞2% 且收在开盘价下方 → 出货；平开或低开走高 → 真定价。这条不写进清单（属分时判据、非收盘判据），只作复盘时的旁证。</div>
+<div class="logic-card" style="border-left:4px solid #e67e22"><strong>次生变量：晶圆代工涨价的传导链。</strong>台积电等调价 10% 至逾 20%，未调价则毛利率受影响 4—5 个百分点。<span class="color-red">这条信息对「代工」是利好（涨价）、对「设计」是利空（成本上升）——今日市场只交易了前者，没交易后者</span>。若涨价确认落地，芯片设计公司的毛利率下修会在 Q4 报表体现，这是一个 1—2 个月后才会被定价的隐性利空。记档，不进当期清单。</div>
+<div class="logic-card" style="border-left:4px solid #8e44ad"><strong>国内侧：三个低频催化，均无第二日属性（规则 181）。</strong>①10 月家电出口额同比 ＋14.1% 至 ＋20.9%（口径不同）、家电音像零售额增速加快——月频数据，今日家电 ＋6.24 亿 与 4 只涨停是它的延续，不是新催化；②氯化铵工业级价格 730 元／吨创年内新高（联碱法减产）——商品价格型催化，缺 A 股载体；③财政部 11/17 发布第二次中加经济财金战略对话联合成果文件（本币互换、熊猫债、跨境支付、绿色金融）——宏观级，对当日盘面无可观测影响。<strong>三者的共同点：都不构成明日的新变量。</strong></div>
+<div class="logic-card" style="border-left:4px solid #3498db"><strong>流动性侧：ETF 被动托底会不会延续。</strong>今日创业板 ETF 广发 50 亿历史天量、四只宽基 15 分钟 15 亿，是明确的被动资金进场痕迹。<span class="color-red">按规则 212，它只托指数、不托广度——这意味着「指数跌幅收窄」不能作为情绪修复的证据，但它是「下方有承接」的证据</span>。若明日 ETF 成交继续放量而指数仍跌，说明托底资金在对抗主动卖盘，属「消耗战」形态，需记档。判定读数：全市场 ETF 成交额（今日 4946 亿）与指数涨跌的方向组合。</div>
+<div class="logic-card" style="border-left:4px solid #95a5a6"><strong>事件日历（本周剩余）：</strong>11/18（周三）英伟达财报后首个交易日；11/19（周四）上海亚虹要约期开始（至 12/18）；艾为电子停牌不超 10 个交易日（最晚 11/24 前后复牌，收购钰泰半导体控股权）；11/21（周五）本周收官。<span class="color-gray">另有两只退市风险股的时间函数：山鹰国际 0.94 元、金科股份 0.97 元，均需连续 20 个交易日低于 1 元才触发，短期不构成事件</span>。</div>
+</div>
+
+<div class="sub-title">⑥ 明日计划框架：回答「搬家能不能成立」的三个问题</div>
+<div style="overflow-x:auto"><table>
+<thead><tr><th style="width:150px">问题</th><th style="width:250px">为什么现在必须问</th><th>判定方式与行动边界</th></tr></thead>
+<tbody>
+<tr><td class="text-left font-bold">问题一：搬去的那一端，财报后还在不在</td><td class="text-left">今日半导体材料 ＋29.63 亿、有研新材 ＋14.89 亿，是「搬家」的全部证据。<span class="color-red">但这笔钱是在财报前 8 小时进场的——它是「预期」还是「定价」，今晚之后才能分辨</span>。如果是预期，财报落地即撤；如果是定价，明日会继续。</td><td class="text-left">判定侧写死「申万二级半导体指数涨跌幅 ＋ 申万一级电子资金」双读数（同源同口径）。<strong>两者同为正 → 搬家成立；任一为负 → 搬家证伪。</strong><span class="color-gray">注意：即使搬家成立，电子一级仍处「整月不评估」冻结期（11/16 判定），额度仍为 0——这条只解决「定性」，不解决「额度」</span></td></tr>
+<tr><td class="text-left font-bold">问题二：清算端还有多少没出清</td><td class="text-left">跌停 77 只为本轮最高，但结构高度集中在传媒（14 只以上）与机器人（2 只）、稀土（2 只）。<span class="color-red">如果跌停高度集中在一个题材，说明清算有边界；如果扩散到多个不相关方向，说明是系统性</span>。</td><td class="text-left">判定用倍数：非 ST 跌停 ≥100 只（77×1.3）→ 系统性；≤60 只 → 清算减速。<span class="color-gray">中性带 60—100 极宽，这是刻意的——高基数日的单日波动本就无信息量，只有当它跳到 100 以上或跌回 60 以下，才构成新信息</span></td></tr>
+<tr><td class="text-left font-bold">问题三：真实高度 2 板会不会继续往下掉</td><td class="text-left">真实高度已是本轮最低（2 板、4 只并列、互不相关）。<span class="color-red">梯队归零意味着「情绪层没有任何向上的载体」——这是仓位无法升档的结构性原因，不是保守，是没东西可买</span>。</td><td class="text-left">判定：出现 3 板换手板（换手 ≥5%、成交 ≥3 亿）→ 高度复位；最高板 ≤2 且 连板 ≤5 → 梯队归零确认。<span class="color-gray">无论哪个分支，接力层冻结都不解除（解冻三件套与高度无关）</span></td></tr>
+</tbody>
+</table></div>
+<div class="alert-box alert-danger"><span>🎯</span><div><strong>框架层的一句话：本期最大的方法论收获，是「口径」这个词从判据层上升到了定性层。</strong>过去六期，「口径即判据」（规则 171）解决的是「同一个判据因口径不同而结论相反」；本期它变成了「同一个市场因口径不同而定性相反」——<span class="color-red">用申万一级看，电子转正了，是修复；用二级看，元件崩塌、消费电子流出，是恶化；用个股看，有研新材一只票占了板块流入的一半，是点状抢跑</span>。三个口径都对，三个结论都不同。<br><br>处置办法不是「选一个口径」，而是<strong>在立条时就写死「定性用哪个口径、结构用哪个口径」</strong>：本期定性的口径是「一级行业资金 ＋ 涨跌停比」，结构描述的口径是「二级行业 ＋ 个股集中度」。<span class="color-red">把口径写进定性，而不是写进脚注——这是从「复盘」走向「可复现」的一步，也是本期没有把「电子转正」误读成「修复」的唯一原因</span>。</div></div>
+</div>
+<div class="section">
+<div class="section-header sh-5"><span class="icon">📊</span> 五、决策矩阵</div>
+<div class="sub-note">额度是上限，不是指令。本期矩阵的核心变化：新增「半导体材料」观察位、防御属性因资金断供降级、猪肉属性作废、容器质量由「未验证」升为「验证通过」但额度不解。</div>
+<div style="overflow-x:auto"><table>
+<thead><tr><th style="width:150px">方向</th><th style="width:250px">当日读数</th><th style="width:96px">定性</th><th style="width:56px">额度</th><th>依据与前置条件</th></tr></thead>
+<tbody>
+<tr><td class="text-left font-bold">半导体材料／设备／光刻<br><span class="color-gray">（本期新增观察位）</span></td><td class="text-left">半导体（申万二级）<span class="signal-up">＋0.30%</span>、资金 <span class="signal-up">＋29.63 亿</span>；电子化学品 ＋1.86%／＋3.50 亿；约 10 只涨停（佳先 30cm、国林／联合化学／卡莱特／清研环境／伟测 20cm）；有研新材 ＋14.89 亿居全市场流入第一</td><td class="text-center"><span class="tag tag-info">观察 · 抢跑型</span></td><td class="text-center">0</td><td class="text-left"><strong>三个理由不给额度，且三条都是「程序性」而非「判断性」：</strong>①<strong>时点</strong>——财报在 11/18 凌晨，今日的上涨按规则 198 只记「预期博弈」，不作事件定价；②<strong>集中度</strong>——板块流入 29.63 亿里有 14.89 亿来自一只票（占 50%），是点状抢跑不是面状建仓；③<strong>冻结未解</strong>——半导体是电子的子集，电子一级仍在「整月不评估」冻结期，按规则 206 子集转正不构成整体解冻。<span class="color-red">允许做的唯一动作是「记读数」：明日半导体二级涨跌幅 ＋ 电子一级资金，两个数决定它是「搬家成立」还是「抢跑失败」</span></td></tr>
+<tr><td class="text-left font-bold">电子／通信／算力硬件<br><span class="color-gray">（CPO／PCB／光模块／存储）</span></td><td class="text-left">电子（申万一级）<span class="signal-up">＋8.12 亿</span> 转正，但通信 <span class="signal-down">−27.31 亿</span>、元件 <span class="signal-down">−20.32 亿</span>、消费电子 −11.19 亿；旭创成交 204.75 亿居首但续跌；长鑫 −19.65 亿居流出第一、两日新低</td><td class="text-center"><span class="tag tag-danger">整月不评估维持</span></td><td class="text-center">0</td><td class="text-left"><strong>规则 206 执行：子集转正 ≠ 整体解冻。</strong>电子一级转正由半导体一个二级拉动，硬件三细分全部为负——<span class="color-red">「一级转正」与「元件崩塌」同日为真，正是本期定性把口径写进正文的原因</span>。冻结条件不变：电子 11 月内不重估（至 11/30），通信五日反手锁至 11/20（今日通信 −27.31 亿，锁内无讨论）。<span class="color-gray">唯一允许的记录动作：若明日财报正面且电子一级资金连续第二日为正，可启动「重估程序」的讨论——注意是讨论，不是解冻</span></td></tr>
+<tr><td class="text-left font-bold">家电／泛消费低价群<br><span class="color-gray">（容器质量验证通过）</span></td><td class="text-left">白电 <span class="signal-up">＋1.47%</span>、家电（申万一级）<span class="signal-up">＋6.24 亿</span> 居流入第二；九阳地天板（振幅 20%、换手 16.35%）；长虹美菱、小熊电器 2 连板；北鼎 ＋16%、海立涨停</td><td class="text-center"><span class="tag tag-success">质量验证通过</span></td><td class="text-center">0</td><td class="text-left"><strong>上期 P0-3 的 A 分支成立，容器从「质量未验证」升为「验证通过」——但这只解一把锁。</strong><span class="color-red">规则 144 的传导链：容器质量 → 容器可用性 → 接力层解冻 → 额度，是四段链条；今天只走通第一段</span>。解冻三件套（广度 ≥40%、非 ST 跌停 ≤2、隔日溢价转正）今日为 23%／77／无源，两条深度反向，按规则 172 取最保守：<strong>冻结维持，容器验证不产生任何额度</strong>。<span class="color-gray">如果只记「九阳涨停了所以家电能做」，就是 11/13 那条「判据对、行动错」的复发</span></td></tr>
+<tr><td class="text-left font-bold">银行／红利／防御<br><span class="color-gray">（停泊兑现）</span></td><td class="text-left">银行 <span class="signal-up">＋0.31%</span>、23 涨 13 跌、<span class="color-red">9 家创历史新高</span>；但资金 <span class="signal-down">−13.55 亿</span> 由正转负；换手仅 0.33%、成交 361.85 亿；上证50 ＋0.06%</td><td class="text-center"><span class="tag tag-warning">降为单日避险</span></td><td class="text-center">0</td><td class="text-left"><strong>规则 209 执行：价格—资金背离以资金为判定侧 → 停泊第四日不成立，属性降为「单日避险」、评估资格作废。</strong>上期写的是「停泊不解冻任何额度」，本期更进一步：<span class="color-red">连「属性观察」的资格都没了——从「可讨论」降到「只记录」</span>。建仓开关不变且更远：上证收复 3640 才开放防御 ETF 评估（今日 3584.58，距 3640 有 55 点），而上证 ＜3600 本已使评估一并冻结。<span class="color-gray">9 家新高的读数不删——它记录的是「存量低换手定价可以走多远」，对下一轮有用</span></td></tr>
+<tr><td class="text-left font-bold">贵金属<br><span class="color-gray">（本期新的反向条目）</span></td><td class="text-left">贵金属 <span class="signal-up">＋1.84%</span> 居行业涨幅第二、资金 <span class="signal-up">＋3.82 亿</span>；山金国际、赤峰黄金、恒邦股份、湖南黄金涨幅居前</td><td class="text-center"><span class="tag tag-info">属性观察</span></td><td class="text-center">0</td><td class="text-left"><strong>接替猪肉成为反向属性条目（规则 118／161）：驱动来自商品端金价，与主轴（跌停数、广度、电子资金）零共用读数。</strong><span class="color-red">选它的理由不是「它涨了」，是「它的上涨理由和 A 股情绪无关」——在跌停 77 只的日子里，一个板块上涨 1.84% 且资金净流入，只可能是外部变量在起作用</span>。属性条目只作方向锚，不产生额度、不计入命中率</td></tr>
+<tr><td class="text-left font-bold">AI 应用／传媒／影视院线</td><td class="text-left">影视院线 <span class="signal-down">−8.59%</span> 放量跌停潮（成交 155.97 亿、换手 8.55%）；传媒 <span class="signal-down">−55.29 亿</span> 流出第一；跌停 14 只以上；<span class="color-red">新华传媒重大重组公告当日跌停</span></td><td class="text-center"><span class="tag tag-danger">题材作废维持</span></td><td class="text-center">0</td><td class="text-left"><strong>上期「一日游确认、年底前不再立项」在本期升级为「题材死亡确认」。</strong>差别的证据是新华传媒：<span class="color-red">拟收购界面财联社 100% 股权这种量级的重组，在正常市况下至少一个一字板，它换来跌停——说明卖压来自题材定价体系本身，不是个股估值（规则 210）</span>。另：影视院线 PE 290 倍、年初至今 −13.69%、近 60 日 −23.06%，估值与趋势双杀，不构成超跌理由</td></tr>
+<tr><td class="text-left font-bold">玄学字辈／低价标的</td><td class="text-left">阳光照明 <span class="signal-up">＋10.04%</span>（14 天 8 板、换手 26.68%、振幅 16.6%）放量反包，带动玄学股打开跌停后再度回封；大东方、襄阳轴承、闽发铝业、青岛食品连续 3 日跌停；天普停牌中</td><td class="text-center"><span class="tag tag-danger">观测终止维持</span></td><td class="text-center">0</td><td class="text-left"><strong>观测终止（规则 193）不变。今日的反抽是「清算端自救」而非「叙事端复活」——判据是「打开≠承接」：多数个股在阳光照明带动下打开跌停，随后再度回封。</strong><span class="color-red">规则 211：跌停板打开本身不是承接证据，收盘是否回封才是；反抽幅度不重要</span>。阳光照明按规则 168 记天数板，不计高度，只作情绪温度计——它越猛、同时跌停越多，说明容器残余越不健康</td></tr>
+<tr><td class="text-left font-bold">接力层（2 板及以上）</td><td class="text-left">连板 6 只（前值 11）、晋级率 9.09%、封板率 65%、炸板 20；<span class="color-red">真实高度 2 板（4 只并列、互不相关）</span>；标称最高 3 板为一字无量板</td><td class="text-center"><span class="tag tag-danger">冻结（第三日）</span></td><td class="text-center">0</td><td class="text-left"><strong>解冻三件套两条深度反向（广度 23%／跌停 77），仅「隔日溢价」无法判定（算术值连续多期无源），按规则 127 降格观察、规则 172 取最保守：冻结维持。</strong><span class="color-red">更根本的原因不是三件套，是「没有载体」——真实高度 2 板、4 只 2 板分属家电 2 只、电力设备 1 只、广电 1 只，没有任何一条线能承载接力资金。冻结在这里不是保守，是事实</span></td></tr>
+<tr><td class="text-left font-bold">物理 AI／人形机器人／稀土</td><td class="text-left">自动化设备 <span class="signal-down">−3.09%</span>／−17.02 亿；汽车零部件 −2.69%／−16.76 亿；杰克科技、福莱新材跌停；宇树、索辰、泛亚微透、上纬新材跌逾 10%；中国稀土、中稀有色跌停</td><td class="text-center"><span class="tag tag-danger">禁入</span></td><td class="text-center">0</td><td class="text-left">机器人链连续第二日杀跌，稀土为新增跌停方向。<span class="color-red">两者的共同点：都是 11 月前两周的「叙事型」热点，且都没有当期业绩——与传媒同属「叙事端」，在资金搬到「有订单端」（半导体材料）时被同步清算</span>。不设观察，不进清单</td></tr>
+<tr><td class="text-left font-bold">猪肉／养殖</td><td class="text-left">养殖业 <span class="signal-down">−0.88%</span>（三日动能 ＋2.35%→＋0.79%→−0.88%）；生猪主力 9930 元／吨（−0.20%）；农林牧渔 <span class="signal-down">−5.40 亿</span></td><td class="text-center"><span class="tag tag-gray">属性作废</span></td><td class="text-center">0</td><td class="text-left"><strong>股期脱钩确认，移出观察池。</strong>商品端仅跌 0.20%，股票端跌 0.88% 并转负——放大 4.4 倍且方向从正转负。<span class="color-red">「股期联动只在商品单边上行时成立」这一适用条件得到确认；商品端一旦停止上涨，股票端会以更快的速度回吐</span>。属性条目不续期，反向条目位置由贵金属接替</td></tr>
+</tbody>
+</table></div>
+<div class="alert-box alert-warning"><span>📊</span><div><strong>矩阵合计：总仓位 0 成维持（全仓空仓）。</strong>本期动作只有三个，且全部是「降级」或「换位」，没有一个是「升档」：防御属性从「停泊」降为「单日避险」并作废评估资格、猪肉属性作废移出、反向条目位置由猪肉换成贵金属。唯一的「升级」是家电容器的质量定性（未验证 → 验证通过），但它不解任何额度。<br><br><strong>杠杆开关：关闭（确认关闭）。</strong>融资余额（11/16 披露口径）22283.75 亿、单日 <span class="signal-down">−214.10 亿</span>（−0.95%），<span class="color-red">连续第二日净偿还，且金额较前值 −165.44 亿放大 1.29 倍——上期写的重估条件是「净偿还收敛 且 增量回正」，本期不但没收敛，恶化 29%</span>。融券余额 292.84 亿，两融差额 21990.92 亿低于 20 日均值。ETF 两融余额 1166.14 亿、单日 ＋23.44 亿（股票型 ＋11.76 亿）——<span class="color-red">杠杆资金在个股端撤退、在 ETF 端小幅加仓，这个结构与本日「被动托底、主动撤离」的盘面完全一致</span>。<br><br><strong>一句话：本期矩阵从「十个 0」变成「十一个 0」，但 0 的含义又换了一批。</strong>新增的是「抢跑观察」（半导体材料）、「停泊兑现」（银行）、「属性作废」（猪肉）、「质量通过但额度不解」（家电）；维持的是「整月不评估」（电子）、「五日反手锁」（通信）、「题材作废」（传媒）、「观测终止」（玄学）、「冻结」（接力）、「禁入」（机器人／稀土）。<span class="color-red">同样的 0，含义从「不看好」扩展到「不能用」「不敢用」「没载体用」「程序未到」——区分这些 0，比记住 0 本身重要得多</span>。</div></div>
+</div>
+
+<div class="section">
+<div class="section-header sh-6"><span class="icon">📋</span> 六、明日（11/18 周三）重点观察清单</div>
+<div class="sub-note">按规则 152（反事实检验）逐条自检：5 条状态类提问、1 条双向属性（P2-1，不设失效线）；按规则 200 全部家数型失效线用倍数；按规则 202 家数判定侧与基数同口径（非 ST）；按规则 203／209 防御类判定侧写死资金、价格只作断点；按规则 171／185 资金判据写死申万口径；按规则 118 保留一条与主轴反向的属性条目（P2-1，本期换为贵金属）。<strong>本期特别约束：按第十八块拼图的修正，强制保留至少一条「预期走 A」的条目（P0-1），并在闭环时单独读它的分支。</strong></div>
+<div style="overflow-x:auto"><table>
+<thead><tr><th style="width:56px">优先级</th><th style="width:200px">判据</th><th style="width:290px">为什么问这个问题</th><th>条件与行动</th></tr></thead>
+<tbody>
+<tr><td><span class="tag tag-danger">P0-1</span></td><td class="text-left font-bold">财报后第一个交易日：搬家成立还是抢跑失败<br><span class="color-gray">A：半导体（申万二级）≥＋1% 且 电子（申万一级）资金 ≥0 → 搬家成立；B：半导体 ＜0 或 电子资金 ＜0 → 抢跑失败</span></td><td class="text-left">这是本期<strong>唯一一条预期走 A 的条目</strong>（按第十八块拼图强制设置）。今日半导体 ＋29.63 亿、有研新材 ＋14.89 亿，是财报前 8 小时的抢跑；<span class="color-red">今晚财报落地后，这笔钱是「预期」还是「定价」，明日开盘 90 分钟内就会给答案</span>。判定侧写死两个同源读数（二级指数 ＋ 一级资金），不看个股、不看概念、不看科创50（科创50 由半导体权重拉动，与半导体二级高度重叠，不是独立读数）。<strong>本条只解决定性，不解决额度——即使 A 成立，电子整月冻结与接力层冻结都不解除。</strong></td><td class="text-left">A：搬家成立 → 定性改为「结构性修复起点」，电子冻结进入「重估程序讨论」（非解冻），额度仍 0<br>B：抢跑失败 → 定性改为「最后一根支柱倒塌」，<span class="color-red">全域禁入升级、11 月内不再设任何多头观察位</span><br><span class="color-gray">中性带：半导体 0%—＋1% → 记 ◐「方向未明」，不行动</span></td></tr>
+<tr><td><span class="tag tag-danger">P0-2</span></td><td class="text-left font-bold">清算端：跌停是破百还是回落<br><span class="color-gray">A：非 ST 跌停 ≤60 → 清算减速；B：≥100（77×1.3）→ 系统性。失效线：与 B 同档（≥100）</span></td><td class="text-left">77 只是本轮最高。用倍数而非绝对值的理由：<span class="color-red">77 是高基数，绝对阈值在此处失真——写「≥90」只是 1.17 倍，单日噪声就能穿越；写「≥100」是 1.3 倍，才有区分度（规则 200）</span>。中性带 60—100 极宽是刻意的：高基数日的单日波动本无信息量，只有当它跳到 100 以上（系统性）或跌回 60 以下（清算减速），才构成新信息。</td><td class="text-left">A：≤60 → 记「清算减速」，观察窗倒计时启动（不建仓、只准备）<br>B：≥100 → 定性升「系统性」，11 月内不再重估、防御端一并禁入<br><span class="color-gray">60—100 之间为中性带，记 ◐ 不行动</span></td></tr>
+<tr><td><span class="tag tag-danger">P0-3</span></td><td class="text-left font-bold">真实高度 2 板：能否出现 3 板换手板<br><span class="color-gray">A：有标的 3 连板 且 换手 ≥5% 且 成交 ≥3 亿 → 高度复位；B：最高板 ≤2 且 连板 ≤5 → 梯队归零确认</span></td><td class="text-left">今日真实高度 2 板是<strong>本轮最低</strong>（标称 3 板的华东重机被规则 197 剔除）。<span class="color-red">梯队的读数已经归零，本条问的不是「会不会涨」，是「还有没有载体」——没有载体的市场，任何接力讨论都是空谈</span>。判定侧写死三个数（连板数、换手、成交额），缺一不可：一字板不算、缩量板不算。</td><td class="text-left">A：出现 3 板换手板 → 高度复位，但接力层冻结不解除（三件套与高度无关）<br>B：最高板 ≤2 且 连板 ≤5 → 梯队归零确认，接力层冻结延长、禁高扩展<br><span class="color-gray">不设失效线：本条自身就是状态类底线判据</span></td></tr>
+<tr><td><span class="tag tag-warning">P1-1</span></td><td class="text-left font-bold">上证 3565.59：今日「收回」是真的还是假的<br><span class="color-gray">A：收盘 ≥3574 → 争夺位收复；B：收盘 ＜3565.59 → 今日的收回被证伪、前低确认失守</span></td><td class="text-left">今日盘中最低 3565.59，<span class="color-red">已下穿 52 周低点 3574 约 8.4 点，收盘 3584.58 收回</span>。判据从「3574」改为「3565.59」的理由：3574 已在本日被消耗过一次，<span class="color-red">新的失效位应该是「今日的盘中最低」——若明日收盘连今日最低都守不住，说明今日的 V 型收回是假动作（规则：前低类判据双读数，收盘判定＋盘中记档支撑消耗度）</span>。</td><td class="text-left">A：收盘 ≥3574 → 争夺位收复，定性不变<br>B：收盘 ＜3565.59 → 前低确认失守、定性升「流动性塌陷」、防御端彻底禁入<br><span class="color-gray">3565.59—3574 之间为争夺区，记 ◐ 不行动</span></td></tr>
+<tr><td><span class="tag tag-warning">P1-2</span></td><td class="text-left font-bold">九阳地天板次日：容器第二日<br><span class="color-gray">A：续板（换手板，换手 ≥10%）→ 容器确认升级；B：断板 → 按四档记录（收红／横盘／温和下跌／崩塌）</span></td><td class="text-left">地天板是本期最贵的读数（20% 振幅、16.35% 换手、35.44 亿成交）。<span class="color-red">它把「分歧」在一天内用完，次日若不能续板，说明分歧没用完、还要再来一次；若能续板，则是本轮第一个「二连反包」——2026 年以来这种形态极少</span>。注意本条与 P0-3 的区别：九阳是容器顶层（不参与高度竞争），P0-3 问的是接力梯队。<strong>两条都成立也不产生额度：容器质量与高度复位都不解接力冻结。</strong></td><td class="text-left">A：续板（换手 ≥10%）→ 容器确认升级，泛消费低价群从「观察」进「优先观察」（仍 0 额度）<br>B：断板 → 四档记录，反包档红利兑现完毕，容器降回「一般观察」<br><span class="color-gray">不设失效线：风向标条目的价值在读数不在行动</span></td></tr>
+<tr><td><span class="tag tag-blue">P2-1</span></td><td class="text-left font-bold">【反向属性条目】贵金属的避险属性<br><span class="color-gray">（以属性立项，不设失效线，规则 118／161）A：贵金属 ≥＋1% → 避险属性续证；B：贵金属转跌 → 避险需求退潮</span></td><td class="text-left">接替猪肉成为新的反向传感器。选它的唯一理由：<span class="color-red">驱动来自商品端金价，与主轴（跌停数、广度、电子资金、真实高度）零共用读数——在一只票跌停 77 只的日子里，一个板块涨 1.84% 且资金 ＋3.82 亿，只可能是外部变量在起作用</span>。属性含义：A 成立 → 避险需求仍在（风险偏好未修复）；B 成立 → 避险需求退潮（反而可能是风险偏好回升的第一信号）。<strong>注意本条的判读方向与涨跌常识相反：贵金属跌，对市场是好事。</strong></td><td class="text-left">A：贵金属 ≥＋1% → 属性续证，避险需求仍主导，仓位维持 0<br>B：贵金属转跌 → 避险需求退潮，记「风险偏好拐点候选」但不因此建仓<br><span class="color-gray">不设失效线（不计入命中率、只作方向锚）；数据源为贵金属行业指数，与主轴零共用读数</span></td></tr>
+</tbody>
+</table></div>
+<div class="alert-box alert-info"><span>📌</span><div><strong>明日核心剧本：一个二元期权日，不是趋势日。</strong>今天的全部结构都指向同一个时点——11/18 凌晨的英伟达财报。<span class="color-red">在它落地之前，A 股已经用一天时间把「超预期」定价了一部分（科创50 盘中 ＋3%、半导体 ＋29.63 亿、有研新材 ＋14.89 亿）；在它落地之后，市场要么承认这笔定价、要么否定它。中间没有第三种可能</span>。<br><br><strong>第一件事：把「搬家」和「抢跑」分开。</strong>今日电子一级转正 ＋8.12 亿，是 11/13 以来第一次。但它的来源是半导体一个二级（＋29.63 亿），而元件 −20.32 亿、消费电子 −11.19 亿、通信 −27.31 亿全部为负。<span class="color-red">如果只看「电子转正」就改定性，就是把「一只票的流入」读成「一个板块的修复」——这是本期最容易犯的错，也是 P0-1 要拆成两个同源读数的原因</span>。<br><br><strong>第二件事：把「防御断供」当成一个转折点，而不是一个读数。</strong>银行 9 家创历史新高、资金 −13.55 亿。上期是「7 家新高配 ＋0.85 亿」，本期连 0.85 亿都没有了。<span class="color-red">这条链条走了整整四天：11/12 独木桥 → 11/13 四读数全正 → 11/16 资金仅 ＋0.85 亿 → 11/17 资金转负。四天里价格一直创新高，钱一直在减少——这就是「停泊」的完整生命周期：先来的是避险的钱，先走的也是避险的钱，因为它们本来就不打算久留</span>。防御属性从此只记录、不评估。<br><br><strong>第三件事：接受「没有载体」这个事实。</strong>真实高度 2 板、4 只并列、互不相关；晋级率 9.09%；连板 6 只。这三个数合起来只有一个含义：<span class="color-red">市场没有向上的载体。这不是「情绪差」，是「情绪无处可去」——差还可以修复，无处可去只能等新的载体出现</span>。九阳的地天板是一个候选，但它是一只 364 倍 PE、52 周新高的票，它的「载体」属性建立在筹码结构上，不在基本面上。<br><br>仓位纪律：<span class="color-red">全仓 0 成（空仓）维持。升档唯一路径（三条同日、缺一不可）：广度 ≥40% ＋ 非 ST 跌停 ≤2 ＋ 隔日溢价转正 → 接力层解冻讨论；防御端通道已作废（资金断供，评估资格取消），即使上证收复 3640 也只恢复「讨论」不恢复「评估」。降档：非 ST 跌停 ≥100 → 定性升「系统性」、11 月内不重估；上证收盘 ＜3565.59 → 定性升「流动性塌陷」。硬锁：电子整月不评估（至 11/30）、通信五日反手锁（至 11/20）、AI 应用题材年底前不再立项、商业航天事件除名、玄学观测终止、传媒除名至年底、煤炭除名维持、山鹰国际与 ST 及南卫股份永久排除、猪肉属性作废。杠杆开关：关闭（连续两日净偿还且放大 1.29 倍）。额度是上限，不是指令。</span></div></div>
+</div>
+
+<div class="footer">
+📅 复盘日期：2026 年 11 月 17 日（周二，A 股收盘后）｜ 数据时点：行情与资金为当日收盘后口径（17:30—18:30 区间取得），两融为 T−1（11/16）官方披露数据 ｜ 数据来源：上海证券交易所 · 深圳证券交易所 · 大连商品交易所 · 财政部 · 财联社 · 证券时报·数据宝 · 21 财经 · 中国证券报 · 上海证券报 · 新华财经 · 中国经济网 · 每日经济新闻 · 新浪财经 · 网易财经 · 金融界 · 东方财富 · 腾讯自选股 · 巨潮资讯网 · 上市公司公告 · 行情与资金数据接口（neodata／westock）<br>
+📊 口径说明：①<strong>涨停家数</strong>——37 只（财联社剔 ST、退市股）／38 只（含 ST 全口径），正文取 37 只并并列；②<strong>跌停家数</strong>——77 只（不含 ST）／84 只（含 ST，含 20cm 跌停），判定侧按规则 202 取非 ST 口径 77 只，失效线基数同口径；③<strong>成交额三口径</strong>——14576.95 亿（沪深两市，缩量 267.96 亿，正文采用）／约 1.47 万亿（沪深京三市，缩量约 266 亿）／14675 亿（另一机构口径）；④<strong>行业资金写死口径</strong>——电子 ＋8.12 亿、家电 ＋6.24 亿、传媒 −55.29 亿、通信 −27.31 亿、机械设备 −25.61 亿、银行 −13.55 亿均为申万一级（Wind 采集）口径；半导体 ＋29.63 亿、光学光电子 ＋9.40 亿、贵金属 ＋3.82 亿、影视院线 −11.44 亿、元件 −20.32 亿、银行Ⅱ −13.54 亿为申万二级／东财二级口径（规则 171：一级定性、二级记结构）；⑤<strong>电子转正的口径陷阱</strong>——一级 ＋8.12 亿为正、二级中元件 −20.32 亿与消费电子 −11.19 亿为负，同一时点「电子转正」与「元件崩塌」同时为真（规则 206）；⑥<strong>影视院线双口径</strong>——申万二级指数 −8.59%（收 1158.51，正文采用）／板块涨跌幅统计 −9.02%；⑦<strong>最高板双读数</strong>——标称 3 板（华东重机一字），按规则 197 剔除后真实高度 2 板（4 只并列）；⑧<strong>晋级率</strong>——连板晋级率 9.09%（昨日 11 只连板今日晋级 1 只）；上期 42.86% 的分母仅 7 只，两期分母不同、不可直接比较；⑨<strong>两融口径</strong>——融资余额 22283.75 亿、单日 −214.10 亿（沪 −94.51 亿／深 −119.59 亿）、融券余额 292.84 亿、两融差额 21990.92 亿，为 T−1（11/16）披露值；⑩<strong>长鑫科技流出三口径</strong>——−19.65／−22.47／−13.11 亿，正文取 −19.65 亿；⑪<strong>有研新材流入两口径</strong>——＋14.89／＋13.83 亿，正文取 ＋14.89 亿；⑫<strong>生猪期货</strong>——大商所主力（LH2701）收盘 9930 元／吨、结算 9950、前结算 9865、−0.20%，媒体「跌超 2%」口径不采用；⑬<strong>阳光照明板数</strong>——14 天 8 板／16 天 8 板两口径并列，按规则 168 不计连板高度；⑭<strong>家电出口增速</strong>——＋14.1% 至 ＋20.9%，不同统计范围，并列不统一。<br>
+🕳️ <strong>数据缺口说明：</strong>①昨日涨停股平均溢价的算术加权值连续多期未取得，本期以「50.00% 上涨」单读数替代，「隔日溢价是否转正」因此无法判定（解冻三件套之一按规则 127 降格为观察侧）；②首板晋级率「合计口径」未取得（仅得「首板约 31 只」推算值与连板晋级率单一口径）；③昨日炸板股（20 只）的完整分母与逐股明细未取得；④全市场主力净额总量未取得（仅得行业与个股两端，规则 117 校验连续第十四期部分执行）；⑤<strong>国际金价与沪金主力合约价格未取得</strong>——P2-1 贵金属属性的商品端读数缺失，属性判定降为「贵金属行业指数」单读数承担，商品端确认留待后续补齐；⑥北交所涨跌停分层未取得；⑦11/17 两融为 T+1 待披露；⑧半导体材料链的板块级涨停家数为按公开报道逐股清点所得（约 10 只），非交易所口径，存在遗漏可能。以上缺口均未做补白或推算。<br>
+⚠️ <strong>非一手来源标注：</strong>本页涉及英伟达财报窗口与判定标准、晶圆代工涨价幅度（10% 至逾 20%）、SEMI 设备销售预测、SK 海力士资本支出、国产光刻机国产化率（90%）的数据均来自财经媒体转述与行业机构公开预测，非公司公告或官方发布；涉及立案调查、退市风险、停牌、要约收购、重大资产重组的内容转述自公开报道，原文以巨潮资讯网与交易所网站为准。<br>
+⚠️ <strong>免责声明：</strong>本页面为个人交易复盘笔记，仅为记录复盘框架的运行与迭代，不构成任何投资建议、荐股或收益承诺。文中提及的全部个股（含具体代码、涨跌幅、资金净额、龙虎榜席位、换手率与振幅）仅作框架判定的观察样本，不构成买入或卖出推荐；涉及立案调查、退市风险、停牌、重整、要约收购、重大资产重组的标的（含山鹰国际、金科股份、*ST 英飞、艾为电子、上海亚虹、新华传媒、天普股份、胜宏科技等），读者应以上市公司正式公告与监管机构文件为准，本页对公告内容的转述可能存在简化，一切以巨潮资讯网原文为准。本页面所引用的第三方数据（含行情、资金流、两融、龙虎榜、期货）均标注了来源与口径，不同数据商之间可能存在统计差异甚至方向冲突，读者应以交易所与上市公司官方披露为最终依据。文中「明日」指下一交易日 2026 年 11 月 18 日（周三）。<strong>本页对全部口径冲突与数据缺口均已显式声明，未做任何补白或虚构；对命中率的解读以独立否决读数与分支分布为准，不构成对框架预测能力的背书。任何依据本页内容作出的投资决策，风险由决策者自行承担。</strong></div>
+<div style="margin-top:12px;color:#999">记住：今天最值得记住的不是「跌停 77 只创新高」，是「涨停也从 33 升到 37、广度从 20% 回到 23%」——跌停与涨停同时变多，比值 2.08 几乎不动，这是「分裂」不是「恶化」。第二件：银行 9 家创历史新高，资金 −13.55 亿；上期还有 ＋0.85 亿，本期连这点都没有了——停泊资金的完整生命周期只有四天，先来的是避险的钱，先走的也是避险的钱。第三件：真实高度 2 板，4 只并列、互不相关——市场不是「情绪差」，是「无处可去」。第四件：九阳从 −9.98% 拉到 ＋10.02%，20% 振幅、16.35% 换手，一天用完分歧；北纬换手 42.76% 跌 7.31%，一天把筹码换了一遍还没人接。同一天里，「卖不出去」与「换得太快」同时发生。今晚财报是唯一裁决者，明天只有一个问题：搬去半导体材料的那 29.63 亿，是预期还是定价。额度是上限，不是指令。</div>
+</div>
+</body>
+</html>

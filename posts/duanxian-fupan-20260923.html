@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>短线交易复盘框架 · 2026.09.23（周三）</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Microsoft YaHei", "PingFang SC", sans-serif;
+    background: #f0f2f5;
+    color: #1a1a2e;
+    padding: 24px;
+    line-height: 1.6;
+  }
+  .container { max-width: 1400px; margin: 0 auto; }
+
+  .header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #fff;
+    padding: 32px 40px;
+    border-radius: 16px 16px 0 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 300px; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(230,57,70,0.15));
+  }
+  .header h1 { font-size: 28px; font-weight: 800; letter-spacing: 1px; }
+  .header .subtitle { font-size: 14px; color: #a0aec0; margin-top: 6px; }
+  .header .meta { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+  .header .meta-item {
+    background: rgba(255,255,255,0.08);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    color: #cbd5e0;
+  }
+  .header .meta-item span { color: #e63946; font-weight: 700; }
+  .header .meta-item span.green { color: #2ecc71; }
+
+  .section {
+    background: #fff;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .section-header {
+    padding: 16px 24px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-header .icon { font-size: 22px; }
+  .sh-0 { background: linear-gradient(135deg, #6c5ce7, #a29bfe); }
+  .sh-1 { background: linear-gradient(135deg, #c0392b, #e74c3c); }
+  .sh-2 { background: linear-gradient(135deg, #2c3e50, #34495e); }
+  .sh-3 { background: linear-gradient(135deg, #8e44ad, #9b59b6); }
+  .sh-4 { background: linear-gradient(135deg, #d35400, #e67e22); }
+  .sh-5 { background: linear-gradient(135deg, #16a085, #1abc9c); }
+  .sh-6 { background: linear-gradient(135deg, #2980b9, #3498db); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th {
+    background: #f8f9fa;
+    padding: 12px 10px;
+    text-align: center;
+    font-weight: 700;
+    color: #2c3e50;
+    border-bottom: 3px solid #e63946;
+    white-space: nowrap;
+    position: sticky; top: 0;
+  }
+  tbody td {
+    padding: 10px 8px;
+    text-align: center;
+    border-bottom: 1px solid #eef0f3;
+    vertical-align: middle;
+  }
+  tbody tr:hover { background: #fff5f5; }
+  tbody tr:nth-child(even) { background: #fafbfc; }
+  tbody tr:nth-child(even):hover { background: #fff5f5; }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .tag-red { background: #ffe0e0; color: #c0392b; }
+  .tag-green { background: #d5f5e3; color: #1e8449; }
+  .tag-orange { background: #fef5e7; color: #d35400; }
+  .tag-blue { background: #e8f0fe; color: #196f3d; }
+  .tag-purple { background: #f4ecf7; color: #7d3c98; }
+  .tag-gray { background: #eee; color: #666; }
+  .tag-dark { background: #2c3e50; color: #fff; }
+  .tag-danger { background: #c0392b; color: #fff; }
+  .tag-warning { background: #f39c12; color: #fff; }
+
+  .stock-name { font-weight: 700; color: #1a1a2e; }
+  .stock-code { font-size: 11px; color: #999; }
+  .signal-up { color: #e63946; font-weight: 700; }
+  .signal-down { color: #2ecc71; font-weight: 700; }
+
+  .logic-box { padding: 24px; background: #fff; }
+  .logic-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .logic-card {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 18px 20px;
+    border-left: 4px solid #e63946;
+  }
+  .logic-card h4 {
+    font-size: 15px; font-weight: 700; color: #1a1a2e;
+    margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
+  }
+  .logic-card p { font-size: 13px; color: #555; line-height: 1.7; }
+  .logic-card .key { color: #e63946; font-weight: 700; }
+  .logic-card.green-card { border-left-color: #1abc9c; }
+  .logic-card.green-card .key { color: #1abc9c; }
+  .logic-card.orange-card { border-left-color: #e67e22; }
+  .logic-card.orange-card .key { color: #e67e22; }
+  .logic-card.purple-card { border-left-color: #9b59b6; }
+  .logic-card.purple-card .key { color: #9b59b6; }
+
+  .sub-title {
+    font-size: 15px; font-weight: 700; color: #1a1a2e;
+    margin: 22px 0 10px; padding-left: 10px; border-left: 4px solid #e63946;
+  }
+  .sub-note { font-size: 12.5px; color: #666; margin-bottom: 8px; }
+
+  .alert-box {
+    margin: 16px 24px;
+    padding: 14px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .alert-danger { background: #fff5f5; border: 1px solid #fab1a0; color: #c0392b; }
+  .alert-warning { background: #fef9e7; border: 1px solid #ffeaa7; color: #d35400; }
+  .alert-info { background: #eef7ff; border: 1px solid #74b9ff; color: #2c3e50; }
+  .alert-success { background: #eafaf1; border: 1px solid #2ecc71; color: #1e8449; }
+
+  .footer {
+    text-align: left;
+    padding: 24px 32px;
+    font-size: 12.5px;
+    color: #666;
+    background: #fff;
+    border-radius: 0 0 12px 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    line-height: 1.9;
+  }
+  .footer .disc { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #ddd; color: #999; }
+  @media (max-width: 768px) {
+    body { padding: 12px; }
+    .header { padding: 20px; }
+    .header h1 { font-size: 20px; }
+    .logic-grid { grid-template-columns: 1fr; }
+    table { font-size: 11px; }
+    thead th, tbody td { padding: 8px 4px; }
+  }
+
+  .text-left { text-align: left; }
+  .font-bold { font-weight: 700; }
+  .color-red { color: #e63946; }
+  .color-green { color: #2ecc71; }
+</style>
+</head>
+<body><div class="container">
+<!-- Header -->
+<div class="header">
+<h1>短线交易复盘框架 · 2026.09.23（周三）</h1>
+<div class="subtitle">龙头 对 杂毛 / 跟风反推识别 / 辟谣排查 / 题材质量评估 ｜ 验证基准：2026.09.22（周二）</div>
+<div class="meta">
+<div class="meta-item">日期：<span>2026.09.23（周三）</span></div>
+<div class="meta-item">涨停：<span class="green">51只</span> ↓（昨64，另口径53）</div>
+<div class="meta-item">跌停：<span class="green">14只</span> ↑（昨5，含ST约15）</div>
+<div class="meta-item">封板率：<span class="green">66%</span> ↓（昨78%，炸板26只）</div>
+<div class="meta-item">成交额：<span class="green">1.76万亿</span> 缩量3706亿（−17.4%）⚠</div>
+<div class="meta-item">晋级率：<span>37.5%</span> ↑（昨33.33%，仍＜40%）</div>
+<div class="meta-item">连板家数：<span class="green">12只</span> 3板及以上 9只</div>
+<div class="meta-item">最高板：<span class="green">4连板</span> 大亚圣象 / 新华文轩</div>
+<div class="meta-item">涨跌家数：<span>1891</span> / <span class="green">3564</span> 上涨占比34%</div>
+<div class="meta-item">指数：<span class="green">−0.39%</span> 沪指3936.52 ｜ 科创50 <span class="green">−0.25%</span></div>
+<div class="meta-item">情绪周期：<span>缩量退潮 · 高低切换</span></div>
+</div>
+</div>
+<!-- Part 0 -->
+<div class="section">
+<div class="section-header sh-0"><span class="icon">✅</span> 〇、昨日（9/22）复盘判断验证 — 复盘要闭环，错了认对了吗</div>
+<div class="alert-box alert-warning">
+<span>🎯</span>
+<div>
+<strong>昨天写的三个 P0 今天兑现了两个，而且兑现方式完全按剧本走：传媒计算机一日游证伪、玄学清算走到终局、晋级率在 40% 以下原地打转。</strong>但昨天留下的最大伏笔——<span class="color-red">「放量分歧」这四个字今天被反证了一半</span>：昨天放量 1040 亿，今天缩量 3706 亿，量能一夜之间撤回原形，说明昨天的放量确实是抛压而非买盘（规则 33 成立）。<strong>今天最值得记的一条是：昨天把「计算机 + 传媒」列为唯一可给仓位的方向，今天两者分别净流出 50.57 亿与 36.22 亿，传媒更是拿下全场跌幅第一 −2.55%——<span class="color-red">一天之隔，资金第一的行业变成资金流出第一</span>。</strong>这正是规则 20（单日资金第一只能发现不能确认）第 4 次发挥作用。本期新增 4 条规则（编号 50—53，编号顺延原因见页脚）。
+</div>
+</div>
+<div style="overflow-x:auto">
+<table>
+<thead>
+<tr><th>昨日判断（9/22）</th><th>今日实际（9/23）</th><th>验证结果</th><th>逻辑修正</th></tr>
+</thead>
+<tbody>
+<tr>
+<td class="text-left font-bold">P0：计算机与传媒能否连续第二日行业资金净流入<br>（规则 20 / 35 的第二日验证）</td>
+<td class="text-left"><span class="signal-down">双双证伪</span>：计算机行业净流出 <span class="signal-down">50.57 亿元</span>（板块 −1.42%）、传媒净流出 <span class="signal-down">36.22 亿元</span>（板块 <span class="signal-down">−2.55%，全场跌幅第一</span>）；中文传媒、中信出版 −12%、华媒控股、中视传媒、龙版传媒批量跌停</td>
+<td><span class="tag tag-red">❌ 未兑现<br>（一日游确认）</span></td>
+<td class="text-left"><strong>按昨日写死的动作映射执行：定性为「高低切换的一日游」，仓位已在昨日降至 2—3 成，今日不再新增。</strong>更值得记的是——<span class="color-red">昨天资金第一的行业，今天成了跌幅第一的行业，中间只隔了一个交易日</span>。这是规则 20 第 4 次实证，也是本轮框架里被验证次数最多的一条：<strong>单日行业资金第一只提供「发现」，不提供「确认」；确认必须等第二日同向。今日进一步细化：当第一日资金流入方向与板块涨幅同时居前、但缺少「3 板以上高度」时，第二日证伪概率显著提高（昨日高度只有内蒙新华 5 板一只，梯队不完整）。</strong></td>
+</tr>
+<tr>
+<td class="text-left font-bold">P0：华瓷股份 6 板是否开板<br>（玄学清算的末信号，规则 34）</td>
+<td class="text-left"><span class="signal-up">停牌核查后复牌即断板</span>：华瓷股份全天炸板、收 <span class="signal-up">+6.95%</span>，换手率从 0.74% 骤升至 <span class="color-red">23.11%</span>；<span class="signal-down">内蒙新华（昨 5 板）断板、南华生物（昨 4 板）炸板收 +5.37%</span>；高位人气股集体坍塌：<span class="signal-down">闽东电力一字跌停（新进重点监控）</span>、龙版传媒跌停、五洲医疗 −12%</td>
+<td><span class="tag tag-green">✅ 完全应验</span></td>
+<td class="text-left"><strong>规则 34 的清算顺序得到完整验证：中位股先崩（9/22 华软 −9.54%、华纺 −7.97%）→ 龙头停牌 → 复牌断板收红 → 高位股全线补跌。</strong>但今天暴露出一个新问题：<span class="color-red">华瓷股份断板当天仍收涨 6.95%，如果只看涨跌幅会误判为「利空出尽」</span>。<strong>新规则 53：停牌核查类标的复牌首日，即使收红也按「情绪高点」处理，不按「利空出尽」处理——判据是「换手率是否骤升」（今日 0.74% → 23.11%，锁仓完全松动），换手骤升即为派发，与收盘涨跌无关。</strong></td>
+</tr>
+<tr>
+<td class="text-left font-bold">P0：晋级率能否重回 40%<br>（退潮烈度的唯一标尺）</td>
+<td class="text-left">连板晋级率 <span class="signal-up">37.5%</span>（连板股总数 12 只、3 板及以上 9 只；上一交易日 24 只连板股）；<span class="signal-down">1 进 2 仅 7.7%</span>（3/39）骤降 13.3pct；昨日涨停股今日平均 <span class="signal-down">−0.37%</span>、红盘率 41.79%</td>
+<td><span class="tag tag-warning">◐ 部分兑现<br>（未达 40%）</span></td>
+<td class="text-left"><strong>晋级率从 33.33% 回升到 37.5%，方向对了但仍卡在 40% 以下——按昨日动作映射，属于「20—40% 维持 2 成、只做日内」区间。</strong>更关键的是内部结构：<span class="color-red">2 板以上晋级率 37.5% 与 1 进 2 晋级率 7.7% 严重背离</span>，说明资金只愿意在高位接棒、不愿在低位试错。<strong>新规则 50：当「2 板以上晋级率 ＞ 35%」而「1 进 2 晋级率 ＜ 10%」时，定性为「中位断层型退潮」——高位有承接但断层不可持续，此时只能做首板与低位低吸，禁止 3 板以上接力。</strong></td>
+</tr>
+<tr>
+<td class="text-left font-bold">P1：兆易创新能否验证单日资金第一<br>（规则 25 的个股版本）</td>
+<td class="text-left"><span class="signal-down">验证失败</span>：科技硬件高位股今日被集中派发，<span class="signal-down">瑞芯微主力净流出 14.61 亿居全市场第一、新易盛 −14.44 亿、东山精密 −13.57 亿</span>；电子行业净流出 <span class="signal-down">48.17 亿元</span>；兆易创新今日具体资金数据未检索到（见数据缺口）</td>
+<td><span class="tag tag-red">❌ 未兑现<br>（方向整体降级）</span></td>
+<td class="text-left"><strong>按规则 25 处理：单日资金极值未获次日验证，该方向整体降级。</strong>虽然个股数据缺失，但方向证据充分——<span class="color-red">昨日净流入第一的兆易创新所属的电子行业，今日净流出 48.17 亿，且净流出前三全部为科技硬件高位股</span>。<strong>判定：昨日的「机构型吸金」今日未延续，属拉高派发。存储 / 元件方向与中材科技同等处理，降为观察不做仓。</strong>规则 25 保留不变，本期为第 3 次实证。</td>
+</tr>
+<tr>
+<td class="text-left font-bold">P1：中国长城一字板炸开后的次日验证<br>（规则 24 的替代指标）</td>
+<td class="text-left"><span class="color-red">今日走势未检索到</span>（见数据缺口）</td>
+<td><span class="tag tag-orange">◑ 无法判定<br>（数据缺口）</span></td>
+<td class="text-left"><strong>本期无法给这条打勾，明确记为数据缺口，不做补白。</strong>但同日的关联证据是：<span class="color-red">算力软件侧今日集体走弱，计算机行业净流出 50.57 亿居净流出第二</span>，与昨日「AI 应用 / 算力芯片概念净流入 47.19 亿居概念第一」形成反向。<strong>按规则 24，一字板本就不适用资金方向判据，改用「封单 / 流通市值」与「次日开板风险」——今日该方向整体转弱，可侧证一字炸板确为高位抛压而非洗盘。</strong>规则 24 保留不变。</td>
+</tr>
+<tr>
+<td class="text-left font-bold">P1：医药能否二次修复<br>（规则 15 的失败后观察）</td>
+<td class="text-left"><span class="signal-up">局部修复而非整体修复</span>：<span class="color-red">CRO 分支逆势走强</span>——义翘神州、奥浦迈、益诺思涨幅均超 10%，浩欧博 20cm 涨停；机构龙虎榜净买入义翘神州 8852 万元；但医药生物行业整体未进入净流入前列，<span class="signal-down">哈药股份等前期高位医药股跌停</span></td>
+<td><span class="tag tag-warning">◐ 部分兑现<br>（分支修复，主线未回）</span></td>
+<td class="text-left"><strong>按昨日写的动作映射：涨停家数未回到 15 只以上、板块涨幅未回到 1% 以上，主线层面判定为「政策一日游」成立，继续留在观察池不做仓。</strong>但今日出现了一个结构变化值得记录：<span class="color-red">修复的是 CRO 这一「有订单、有海外客户、有业绩锚点」的分支，而不是前期靠政策情绪推高的中成药 / 药店分支</span>。<strong>新规则 52：同一板块内部，「有海外订单与业绩锚点」的分支与「纯政策情绪」的分支在退潮期的修复能力不同——资金只回流前者。跟踪时按分支而非按板块。</strong></td>
+</tr>
+<tr>
+<td class="text-left font-bold">P2：两融差额上穿 20 日均值后的持续性<br>（规则 38）</td>
+<td class="text-left"><span class="signal-down">杠杆资金退潮</span>：沪深北两融余额 <span class="signal-down">26550.08 亿元，较前一交易日减少 13.00 亿元</span>；融资余额 <span class="signal-down">26253.13 亿元（−10.44 亿）</span>、融券余额 296.94 亿（−2.57 亿）；分市场看沪市 −1.63 亿、深市 −11.53 亿、北交所 +0.16 亿</td>
+<td><span class="tag tag-green">✅ 应验<br>（按风险侧解读）</span></td>
+<td class="text-left"><strong>昨日写的判据是「融资续增但晋级率继续下滑 → 杠杆资金在高位接盘，风险大于机会，仓位再降一档」。</strong>今日实际情况是<span class="color-red">融资余额转为减少、晋级率虽回升但仍低于 40%</span>，属「杠杆同步退出」，比「高位接盘」略好。<strong>规则 38 维持不变并补一条边界：融资余额由增转减且伴随量能缩量 ＞ 15% 时，判定为「节前主动降杠杆」而非「被动平仓」，此时不额外降仓，但也不恢复打板。</strong></td>
+</tr>
+<tr>
+<td class="text-left font-bold">P2：重要政策与事件窗口</td>
+<td class="text-left"><span class="signal-up">休市安排确认</span>：沪深北三大交易所 9/17 公告明确 <span class="color-red">9/25（周五）至 9/27（周日）中秋休市，9/28（周一）起照常开市；国庆 10/1 至 10/7 休市，10/8 起开市</span>；<span class="signal-up">新催化落地</span>：江西宏瑞兴科 9/22 发布覆铜板调价通知，出厂价上调 10%，CCL 产业链新一轮涨价拉开序幕</td>
+<td><span class="tag tag-green">✅ 应验</span></td>
+<td class="text-left"><strong>休市安排确认后，9/23 与 9/24 确为中秋前最后两个完整交易日——昨日写的「提前完成仓位规划、绝不被动持仓过节」今日生效：缩量 3706 亿正是避险资金主动降仓的结果。</strong>另一条更有价值：<span class="color-red">覆铜板涨价通知发布于 9/22 盘后，9/23 即形成完整涨停梯队（澳弘电子 9 天 7 板、大亚圣象 4 板、中一科技 20cm 涨停）</span>。<strong>新规则 51：上游材料涨价函的传导路径是「自上而下」——覆铜板 → PCB → 铜箔 / 树脂 / 电子布，跟涨跟最上游环节（与规则 8 同源）；且涨价函类催化属「可验证的产业变量」，不适用规则 15 的「政策印发逾一周」限制。</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="alert-box alert-info">
+<span>🌡️</span>
+<div><strong>今日情绪定调：缩量退潮 · 高低切换 —— 量能一夜撤回原形，前一日「放量分歧」被证实为抛压。</strong>四项广度继续走弱：<span class="color-red">涨停 64 → 51 只、上涨占比 42% → 34%、跌停 5 → 14 只（近三倍）、成交额缩量 3706 亿</span>；唯一改善的是晋级率 33.33% → 37.5%，但仍低于 40%。<strong>结构的核心变化是「换轨而非退场」：一边是高位投机链崩塌（传媒 −2.55%、近端次新沈鼓集团 −21%、中塑股份 −34%、世纪数码 30cm 一字跌停），另一边是 PCB 涨价链与地产链逆势完整抱团。</strong>资金没有离场，只是从「面」缩到「点」。</div>
+</div>
+<div class="alert-box alert-danger">
+<span>⚠️</span>
+<div><strong>今日复盘的核心修正：把「单日资金第一」的证伪概率做成可执行的判据。</strong>昨天把计算机与传媒列为唯一可给仓位的方向，今天两者一个净流出 50.57 亿、一个跌幅全场第一。<span class="color-red">这不是判断失误，是概率使然——但概率可以被压缩：当第一日资金流入方向缺少「3 板以上完整梯队」时，第二日证伪概率显著更高。</span><strong>本期新增规则 50（中位断层型退潮的识别）、规则 51（涨价函自上而下传导）、规则 52（同板块分支修复能力分化）、规则 53（停牌核查复牌首日按情绪高点处理）。同时确认一条好消息：规则 34（玄学清算顺序）与规则 20（单日资金第一）双双第 4 次验证成功，领先指标体系已连续三期稳定生效。</strong></div>
+</div>
+</div>
+<!-- Part 1 -->
+<div class="section">
+<div class="section-header sh-1"><span class="icon">🔥</span> 一、题材全景扫描 — 新旧 / 想象空间 / 持续性 / 发酵阶段</div>
+<div class="alert-box alert-info">
+<span>🔄</span>
+<div><strong>今天主线第四次换轨：从「传媒 + 计算机」的软件侧，换到「PCB 涨价链 + 半导体硬件」的硬件侧，而这次换轨有真实的产业催化做底。</strong>江西宏瑞兴科覆铜板涨价 10% 是 9/22 盘后的硬信息，9/23 直接兑现出完整梯队；同时 Meta 智能体 Muse 登顶美区应用榜、三星计划将玻璃载板采购量提升 2.5 倍，共同指向「AI 硬件上游材料」这一条线。<span class="color-red">与前三次换轨的关键差别：这次的上游材料涨价是可验证的经营变量，而不是政策文件或海外股价映射——按规则 51，这类催化不适用「政策印发逾一周」的时效限制。</span></div>
+</div>
+<div style="overflow-x:auto">
+<table>
+<thead>
+<tr><th>题材</th><th>新旧程度</th><th>想象空间</th><th>持续性</th><th>发酵阶段</th><th>龙头 / 连板高度</th><th>板块跟风</th><th>催化驱动</th><th>评级</th></tr>
+</thead>
+<tbody>
+<tr>
+<td class="text-left font-bold">PCB / 覆铜板 / 铜箔涨价链<br>（今日最强方向）</td>
+<td><span class="tag tag-red">新催化（涨价函）</span></td>
+<td>中</td>
+<td>中强（<span class="color-red">有产业催化 + 梯队完整</span>）</td>
+<td><span class="tag tag-danger">爆发第 1 日</span></td>
+<td class="text-left"><span class="stock-name">澳弘电子</span> <span class="stock-code">605058</span> 9 天 7 板（续创新高）<br><span class="stock-name">大亚圣象</span> <span class="stock-code">000910</span> 4 连板（缩量秒板）<br><span class="stock-name">中一科技</span> 20cm 涨停</td>
+<td class="text-left">PET 铜箔板块 <span class="signal-up">+2.46% 居概念首位、全天主力净流入 25.86 亿元</span>；江南新材（午后 3 分钟涨停）、依顿电子、胜利精密、集泰股份、超声电子 <span class="signal-up">+7.85%</span>、沃格光电涨停；电子行业成交 <span class="signal-up">4970.79 亿元居全行业第一</span></td>
+<td class="text-left">①<span class="color-red">9/22 江西宏瑞兴科发布调价通知，覆铜板出厂价上调 10%</span>，继中国巨石 9 月提价后的又一材料涨价信号；②Meta 智能体 Muse 登顶美区 App 榜，机构看好 CPU 需求支撑上游 ABF 基板景气；③三星预计明年 HBM4 产量翻倍、玻璃载板采购量再提 2.5 倍</td>
+<td>★★★★☆<br><span class="tag tag-orange">第 1 日，明日看梯队是否续推</span></td>
+</tr>
+<tr>
+<td class="text-left font-bold">玻璃基板 / 半导体设备 / 检测仪器<br>（VNA 新分支）</td>
+<td><span class="tag tag-red">新分支（题材首次发酵）</span></td>
+<td>大</td>
+<td>中（<span class="color-red">设备侧强、权重侧弱</span>）</td>
+<td><span class="tag tag-warning">爆发第 1 日</span></td>
+<td class="text-left"><span class="stock-name">沃格光电</span> 涨停（<span class="signal-up">主力净流入 12.81 亿居全市场第一</span>）<br><span class="stock-name">优利德</span> 20cm 涨停<br><span class="stock-name">普源精电</span> 20cm 涨停</td>
+<td class="text-left">矢量网络分析仪（VNA）概念首次成规模发酵：普源精电、莱伯泰科、优利德、东方中科涨停，电科思仪、创远信科、鼎阳科技、同惠电子涨超 8%；玻璃基板方向沃格光电、三峡新材涨停；<span class="signal-down">但电子行业整体净流出 48.17 亿元</span></td>
+<td class="text-left">高速 PCB 与光模块产线加速扩产，VNA 成为 AI PCB 交付良率的关键检测设备，华泰证券认为测试向更高频率、更多端口升级有望推动 VNA 量价齐升；<span class="color-red">但设备与仪器属「卖铲子」分支，与 PCB 主链的涨价逻辑并不完全同源</span></td>
+<td>★★★★☆<br><span class="tag tag-orange">新分支，只做首板不接力</span></td>
+</tr>
+<tr>
+<td class="text-left font-bold">房地产产业链<br>（资金净流入第一但涨幅平平）</td>
+<td><span class="tag tag-gray">旧（政策预期延续）</span></td>
+<td>中</td>
+<td>弱（<span class="color-red">午后冲高兑现，梯队仅 3 板</span>）</td>
+<td><span class="tag tag-dark">分化第 3 日</span></td>
+<td class="text-left"><span class="stock-name">我爱我家</span> <span class="stock-code">000560</span> 3 连板<br><span class="stock-name">华远控股</span> <span class="stock-code">600743</span> 3 连板<br><span class="stock-name">华丽家族</span> <span class="stock-code">600503</span> 3 连板</td>
+<td class="text-left">房地产服务 <span class="signal-up">+3.31% 居申万行业首位</span>、行业主力净流入 <span class="signal-up">+10.34 亿元居首</span>，但<span class="color-red">行业指数仅 +0.02%</span>；早盘一度发散至水泥、钢结构、电梯，<span class="signal-down">午后万科A、中华企业、世联行集体炸板回落</span></td>
+<td class="text-left">「金九」楼市销售旺季催化，一线城市二手房活跃度率先反弹（上海 9 月二手房累计成交同比 +28%）；<span class="color-red">但政策已进入第二周，边际递减明显</span></td>
+<td>★★★☆☆<br><span class="tag tag-orange">资金第一但涨幅倒数，只做日内</span></td>
+</tr>
+<tr>
+<td class="text-left font-bold">创新药 / CRO<br>（分支修复）</td>
+<td><span class="tag tag-orange">半新（政策 + 订单）</span></td>
+<td>大</td>
+<td>中（<span class="color-red">只修复有业绩锚点的分支</span>）</td>
+<td><span class="tag tag-warning">二次修复第 1 日</span></td>
+<td class="text-left"><span class="stock-name">浩欧博</span> 20cm 涨停<br><span class="stock-name">义翘神州</span> <span class="signal-up">+10% 以上</span><br><span class="stock-name">奥浦迈</span> <span class="signal-up">+10% 以上</span></td>
+<td class="text-left">CRO 分支集体走强：益诺思涨超 10%，和元生物活跃；机构龙虎榜净买入义翘神州 8852 万元；<span class="signal-down">但医药生物行业整体未进入净流入前七，哈药股份等前期高位医药股跌停</span></td>
+<td class="text-left">国产创新药进入商业化兑现期、出海研发合作与订单落地加速；<span class="color-red">与前期靠政策情绪推高的中成药 / 药店分支走势割裂——按新规则 52，退潮期资金只回流「有海外订单与业绩锚点」的分支</span></td>
+<td>★★★☆☆<br><span class="tag tag-blue">按分支跟踪，不做板块</span></td>
+</tr>
+<tr>
+<td class="text-left font-bold">出版传媒 / 文化传媒<br>（昨日主线，今日跌幅第一）</td>
+<td><span class="tag tag-orange">半新（政策已落地）</span></td>
+<td>中</td>
+<td>弱（<span class="color-red">第二日彻底证伪</span>）</td>
+<td><span class="tag tag-danger">退潮第 2 日</span></td>
+<td class="text-left"><span class="stock-name">新华文轩</span> <span class="stock-code">601811</span> 4 连板（并购）<br><span class="stock-name">新华传媒</span> <span class="stock-code">600825</span> 3 连板（一字）<br><span class="stock-name">泰慕士</span> <span class="stock-code">001234</span> 3 连板</td>
+<td class="text-left">传媒板块 <span class="signal-down">−2.55% 拿下全场跌幅第一</span>；中视传媒、华媒控股、龙版传媒批量跌停，中信出版跌超 12%；行业主力净流出 <span class="signal-down">36.22 亿元</span>；<span class="color-red">仅剩并购重组属性的三只票在撑</span></td>
+<td class="text-left">《出版业发展"十五五"规划》的催化已完全兑现完毕；<span class="color-red">残存的三只连板（新华文轩 / 新华传媒 / 泰慕士）全部是「并购重组 + 国资」属性，与出版政策无关——说明板块已从「政策炒作」退化为「重组个股行情」</span></td>
+<td>★★☆☆☆<br><span class="tag tag-danger">主线撤销，重组票单独处理</span></td>
+</tr>
+<tr>
+<td class="text-left font-bold">近端次新 / 玄学高位股<br>（清算进行中）</td>
+<td><span class="tag tag-gray">旧（纯情绪）</span></td>
+<td>小</td>
+<td>弱（<span class="color-red">崩塌</span>）</td>
+<td><span class="tag tag-danger">清算末段</span></td>
+<td class="text-left"><span class="stock-name">闽东电力</span> 一字跌停（新进重点监控）<br><span class="stock-name">世纪数码</span> 30cm 一字跌停<br><span class="stock-name">沈鼓集团</span> <span class="signal-down">−21%</span></td>
+<td class="text-left">昨日上市首日均涨超 6.8 倍的两只新股深度回调；中塑股份 <span class="signal-down">−34%</span>；五洲医疗 <span class="signal-down">−12%</span>；「华字辈」后排股华媒控股、华纺股份持续被淘汰</td>
+<td class="text-left">无产业催化，纯情绪载体；<span class="color-red">闽东电力被新进重点监控并一字跌停，是「监管说 ≠ 公司说」的又一实证（规则 32）</span></td>
+<td>★☆☆☆☆<br><span class="tag tag-danger">绝对不参与</span></td>
+</tr>
+<tr>
+<td class="text-left font-bold">煤炭 / 焦炭 / 传媒影视<br>（领跌方向）</td>
+<td><span class="tag tag-gray">旧</span></td>
+<td>小</td>
+<td>弱</td>
+<td><span class="tag tag-dark">退潮</span></td>
+<td class="text-left">—</td>
+<td class="text-left">焦炭 <span class="signal-down">−4.75% 垫底</span>、航海装备 −3.34%、广告营销 −3.18%、一般零售 −2.64%、数字媒体 −2.63%、游戏 −2.44%、地面兵装 −2.43%、出版 −2.35%、影视院线 −2.06%</td>
+<td class="text-left">资源品与传媒前期涨幅兑现；<span class="color-red">注意这些方向全部是「前一日的承载方向」，属于典型的退潮期资金撤离顺序</span></td>
+<td>★☆☆☆☆<br><span class="tag tag-danger">不参与</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="alert-box alert-warning">
+<span>💡</span>
+<div><strong>今日题材结论：一条真主线（PCB 涨价链）+ 一个新分支（VNA 检测仪器）+ 三条退潮线。</strong>PCB 涨价链是本期唯一「催化可验证 + 梯队完整 + 资金同向」的方向：<span class="color-red">PET 铜箔概念主力净流入 25.86 亿居概念首位、电子行业成交额 4970.79 亿居全行业第一、澳弘电子 9 天 7 板 + 大亚圣象 4 板构成完整高度</span>。但要注意两个风险：一是<span class="color-red">澳弘电子未进入当日连板梯队（按 9 天 7 板的反包口径计算），说明它是趋势股不是情绪龙头</span>；二是<span class="color-red">电子行业整体仍净流出 48.17 亿元</span>——涨价链的局部资金流入无法覆盖硬件侧的派发。因此本期定性为「结构性抱团」，不是「新主线启动」。</div>
+</div>
+</div>
+<!-- Part 2 -->
+  <div class="section">
+    <div class="section-header sh-2"><span class="icon">🎯</span> 二、个股定位 — 龙头（主动拉升）对 杂毛（反推跟风）</div>
+    <div class="alert-box alert-danger">
+      <span>🚨</span>
+      <div><strong>今日最值得记的一组对照：同样是覆铜板 / PCB 链条上的票，中一科技拿到了「机构 + 北向 + 游资」三方合力，而超声电子拿到的是「主力资金净流入 4.46 亿」与「龙虎榜净卖出 1.31 亿居全场第一」这对完全相反的数据。</strong><span class="stock-name">中一科技</span>：<span class="signal-up">20cm 涨停</span>，龙虎榜净买入 <span class="signal-up">2.16 亿元</span>（全场第二）、深股通净买入 <span class="signal-up">1.04 亿元居首</span>、游资净买入 2.16 亿居首、机构净买入 3123 万——<strong>四方同向，且所属 PET 铜箔概念主力净流入 25.86 亿居概念第一，板块资金这道前置过滤过了</strong>（规则 37）。<span class="stock-name">超声电子</span>：<span class="signal-up">+7.85%</span>、换手 <span class="color-red">37.60%</span>、成交 58.53 亿，主力资金净流入 4.46 亿（其中特大单 3.82 亿），<span class="signal-down">然而龙虎榜净卖出 1.31 亿居全场第一——机构专用席位净卖 7115 万、深股通净卖 6040 万、游资净卖 1.21 亿</span>。<strong>按规则 22，两者背离时不以任何一方定性，以次日开盘半小时为准。这是本期的第一观察项。</strong></div>
+    </div>
+    <div style="overflow-x:auto">
+    <table>
+      <thead>
+        <tr><th>股票</th><th>所属题材</th><th>定位</th><th>主动封板？</th><th>反推身位？</th><th>位置</th><th>风险信号</th><th>交易判断</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="stock-name">澳弘电子</span><br><span class="stock-code">605058</span></td>
+          <td>PCB / 覆铜板</td>
+          <td><span class="tag tag-danger">全场最高标（9 天 7 板）</span></td>
+          <td class="text-left">✅ 涨停（收 58.60、<span class="signal-up">+10.01%</span>），午后封板</td>
+          <td><span class="color-red">是</span></td>
+          <td>极高位（月内 <span class="color-red">+106%</span>）</td>
+          <td class="text-left">🚨🚨 <strong>公司当晚发布《股票交易异常波动暨风险提示公告》</strong>：3 个交易日涨幅偏离值累计超 20%、累计换手率 50.91%；<span class="color-red">近 10 个交易日累计上涨 97.71%、平均换手 12.72%</span>；<strong>2026 上半年归母净利 6630.21 万元、同比 −17.89%，扣非净利 4809.46 万元、同比 −38.73%</strong>；泰国基地尚处产品认证与小批量生产阶段，短期无重大业绩影响；<span class="color-red">公司自认「存在市场情绪过热和非理性炒作情形，当前股价已处历史高位，累计涨幅显著偏离基本面」</span></td>
+          <td>⚠ 绝对回避<br><span class="tag tag-danger">第④问命中：公司主动量化自身涨幅</span></td>
+        </tr>
+        <tr>
+          <td><span class="stock-name">中一科技</span><br><span class="stock-code">301150</span></td>
+          <td>铜箔 / 覆铜板</td>
+          <td><span class="tag tag-danger">四方资金共振</span></td>
+          <td class="text-left">✅ 20cm 涨停（收 49.20、<span class="signal-up">+20.00%</span>）</td>
+          <td>否</td>
+          <td>中高位（换手 14.55%）</td>
+          <td class="text-left">✅ 龙虎榜净买入 <span class="signal-up">2.16 亿元</span>（占总成交 5.16% 以上的深股通单边即 1.04 亿）；<span class="signal-up">深股通净买入居全场第一</span>；游资净买入 2.16 亿居首（成都系净买 1.0 亿、章盟主净买 6199 万、量化打板净买 4995 万）；机构净买入 3123 万；<span class="signal-up">所属 PET 铜箔概念主力净流入 25.86 亿居概念第一</span></td>
+          <td>★★★★ 关注<br><span class="tag tag-blue">与 9/22 中材科技正好相反：板块资金同向 + 多路资金合力</span></td>
+        </tr>
+        <tr>
+          <td><span class="stock-name">康强电子</span><br><span class="stock-code">002119</span></td>
+          <td>半导体封装材料 / 引线框架</td>
+          <td><span class="tag tag-danger">龙虎榜净买第一</span></td>
+          <td class="text-left">✅ 涨停（收 26.92、<span class="signal-up">+10.01%</span>）</td>
+          <td>否</td>
+          <td>中位（首板，换手 15.27%）</td>
+          <td class="text-left">✅ 龙虎榜净买入 <span class="signal-up">2.78 亿元居全场第一</span>，占当日成交额 18.81%；机构专用席位净买入 6176 万、深股通净买入 4742 万、营业部席位净买入 1.69 亿；<span class="signal-up">主力资金全天净流入 3.66 亿</span>；近三日累计涨 8.46%，属先进封装 / 半导体材料</td>
+          <td>★★★ 关注<br><span class="tag tag-blue">三方同向且位置不高，是本期质量最好的首板之一</span></td>
+        </tr>
+        <tr>
+          <td><span class="stock-name">超声电子</span><br><span class="stock-code">000823</span></td>
+          <td>覆铜板 / PCB</td>
+          <td><span class="tag tag-warning">资金与龙虎榜严重背离</span></td>
+          <td class="text-left">◐ <span class="signal-up">+7.85%</span>（收 27.20），未封板</td>
+          <td>否</td>
+          <td>中位（高换手 37.60%）</td>
+          <td class="text-left">🚨 <span class="signal-up">主力资金净流入 4.46 亿元</span>（特大单净流入 3.82 亿、大单净流入 6390.77 万），近 5 日主力净流入 1.56 亿；<span class="signal-down">但龙虎榜净卖出 1.31 亿元居全场第一</span>——机构专用席位净卖 7115 万、深股通净卖 6040 万、游资净卖 1.21 亿；成交 58.53 亿、振幅 12.49%；<span class="color-red">9/22 两融余额 8.92 亿、近 5 日融资余额增 4179 万</span></td>
+          <td>⚠ 谨慎<br><span class="tag tag-danger">规则 22 实证：次日开盘半小时定方向</span></td>
+        </tr>
+        <tr>
+          <td><span class="stock-name">优利德</span><br><span class="stock-code">688628</span></td>
+          <td>科学仪器 / 矢量网络分析仪</td>
+          <td><span class="tag tag-danger">机构净买第一</span></td>
+          <td class="text-left">✅ 20cm 涨停（收 114.44、<span class="signal-up">+20.00%</span>）</td>
+          <td><span class="color-red">是</span></td>
+          <td>中高位（近三日 <span class="color-red">+42.32%</span>）</td>
+          <td class="text-left">✅ 两机构专用席位合计净买入 <span class="signal-up">1.27 亿元居全场机构榜首</span>，沪股通净买 870 万；<span class="signal-down">但游资净卖出 5386.84 万、全天主力资金口径为净流出 2410.94 万</span>；换手 11.79%、成交 14.08 亿；<span class="color-red">⚠ 公司澄清：VNA4000 / VNA3000 系列频率仅覆盖 100kHz—9GHz，暂不覆盖高速连接器 / 线缆 / 高端 PCB 测试所需高频段，尚不具备相关测试能力</span></td>
+          <td>⚠ 分级处理<br><span class="tag tag-danger">规则 6 命中：澄清的正是上涨理由</span></td>
+        </tr>
+        <tr>
+          <td><span class="stock-name">沃格光电</span><br><span class="stock-code">603773</span></td>
+          <td>玻璃基板 / 先进封装</td>
+          <td><span class="tag tag-danger">个股资金第一</span></td>
+          <td class="text-left">✅ 涨停（<span class="signal-up">+10.00%</span>）</td>
+          <td>否</td>
+          <td>中位</td>
+          <td class="text-left">✅ <span class="signal-up">主力资金净流入约 11.27 亿元居全市场第一</span>（另有口径 12.81 亿，见数据缺口），其中特大单净流入 13.57 亿；<span class="color-red">但所属电子行业当日整体净流出 48.17 亿元</span>——个股强、行业弱，属资金在硬件侧内部挑票</td>
+          <td>★★★ 观察<br><span class="tag tag-orange">按规则 25，单日个股资金极值必须次日验证后才成立</span></td>
+        </tr>
+        <tr>
+          <td><span class="stock-name">大亚圣象</span><br><span class="stock-code">000910</span></td>
+          <td>人造板 / 地板（被贴 PCB 标签）</td>
+          <td><span class="tag tag-warning">被澄清的高标（4 连板）</span></td>
+          <td class="text-left">✅ 涨停（4 连板）</td>
+          <td><span class="color-red">是</span></td>
+          <td>高位（4 板）</td>
+          <td class="text-left">🚨🚨 <strong>公司 9/22 晚间公告澄清：主营为地板、人造板、铝板带；人造板产品中的「超薄 PCB 纤维板」不属于电子元器件、不构成 PCB 的组成部分，仅用于垫在待钻孔覆铜板下方起辅助和保护作用，该产品收入占营业收入比例较小</strong>；<strong>2026 上半年营收 20.71 亿元、同比 −1.17%，归母净利 −1.94 亿元、同比 −643.59%</strong></td>
+          <td>⚠ 回避<br><span class="tag tag-danger">规则 6 命中：澄清的正是市场买入的标签</span></td>
+        </tr>
+        <tr>
+          <td><span class="stock-name">义翘神州</span><br><span class="stock-code">301047</span></td>
+          <td>生物制品 / CRO</td>
+          <td><span class="tag tag-purple">CRO 分支龙头</span></td>
+          <td class="text-left">◐ <span class="signal-up">+10.12%</span>（收 150.00），未封板</td>
+          <td>否</td>
+          <td>中高位（换手 12.36%）</td>
+          <td class="text-left">✅ 龙虎榜净买入 <span class="signal-up">1.51 亿元</span>、机构净买入 8852 万；<span class="color-red">但当日主力资金口径为净流出 8628.6 万</span>；因连续 3 个交易日涨幅偏离值累计达 30% 上榜；<span class="color-red">同批 CRO 中益诺思 +14.42% 创历史新高、奥浦迈 +12.69%、和元生物 +10.71%</span></td>
+          <td>★★★ 观察<br><span class="tag tag-blue">按规则 52，只跟「有海外订单与业绩锚点」的分支，不做板块</span></td>
+        </tr>
+        <tr>
+          <td><span class="stock-name">江淮汽车</span><br><span class="stock-code">600418</span></td>
+          <td>汽车整车（权重）</td>
+          <td><span class="tag tag-warning">权重股异动</span></td>
+          <td class="text-left">✅ 涨停（收 23.45、<span class="signal-up">+9.99%</span>，2 连板）</td>
+          <td>否</td>
+          <td>中位（换手 9.63%）</td>
+          <td class="text-left">✅ <span class="signal-up">主力资金净流入 7.99 亿元</span>、龙虎榜净买入 <span class="signal-up">3.79 亿元</span>（沪股通买 5.86 亿 / 卖 4.16 亿）；<span class="signal-down">但游资净卖出 2.48 亿居全场首位</span>——<strong>机构与北向在买、游资在卖，属典型的权重股换手结构</strong></td>
+          <td>★★ 观察<br><span class="tag tag-orange">大盘股 2 板不易持续，按趋势股看待不做接力</span></td>
+        </tr>
+        <tr>
+          <td><span class="stock-name">万科A</span><br><span class="stock-code">000002</span></td>
+          <td>房地产开发（权重）</td>
+          <td><span class="tag tag-purple">地产中军</span></td>
+          <td class="text-left">◐ <span class="signal-up">+2.89%</span>（收 3.92），<span class="color-red">冲高炸板</span>、4 天 3 板终结</td>
+          <td>否</td>
+          <td>中位</td>
+          <td class="text-left">✅ <span class="signal-up">主力资金净流入 4.71 亿元</span>，龙虎榜三日口径净买入约 <span class="signal-up">1.24 亿元</span>；<span class="color-red">但当日单日分歧显著加大，同板块中华企业、世联行、万科A 均盘中炸板回落</span>；地产服务板块 +3.31% 居申万首位、板块资金 +10.34 亿居首，<span class="color-red">而房地产行业指数仅 +0.02%</span></td>
+          <td>⚠ 谨慎<br><span class="tag tag-orange">板块资金第一但涨幅倒数，按规则 20 只做日内不给隔夜仓</span></td>
+        </tr>
+        <tr>
+          <td><span class="stock-name">新华文轩</span><br><span class="stock-code">601811</span></td>
+          <td>出版 / 并购重组</td>
+          <td><span class="tag tag-warning">高位连板但资金流出</span></td>
+          <td class="text-left">✅ 4 连板（收 18.50）</td>
+          <td><span class="color-red">是</span></td>
+          <td>高位（4 板）</td>
+          <td class="text-left">🚨 <span class="signal-down">龙虎榜净卖出 916.4 万元</span>、<span class="signal-down">主力资金净流出 6247.2 万元</span>；所属传媒行业<span class="signal-down">净流出 36.22 亿、板块 −2.55% 拿下全场跌幅第一</span>；<span class="color-red">涨停日主力净流出 → 按规则 18 只做日内、不许隔夜</span></td>
+          <td>⚠ 谨慎<br><span class="tag tag-danger">规则 18 命中：涨停 + 主力净流出 = 日内标的</span></td>
+        </tr>
+        <tr>
+          <td><span class="stock-name">闽东电力</span><br><span class="stock-code">000993</span></td>
+          <td>电力 / 前期玄学高位</td>
+          <td><span class="tag tag-danger">一字跌停（清算末段）</span></td>
+          <td class="text-left">否（<span class="signal-down">−10.00%</span>，收 18.82，一字跌停）</td>
+          <td><span class="color-red">是</span></td>
+          <td>极高位（崩塌中）</td>
+          <td class="text-left">🚨🚨 <span class="color-red">已新进重点监控（监管口径）</span>——按规则 32，监管说 ≠ 公司说，一票否决且不受情绪开关豁免；<span class="signal-down">主力资金净流出 5303.8 万、深股通净卖出 1783 万</span>；<span class="color-red">但龙虎榜为净买入 6348.63 万元</span>（跌停日被资金抄底，属博反弹资金而非承接资金）</td>
+          <td>⚠ 绝对回避<br><span class="tag tag-danger">监管介入 + 一字跌停，任何反弹都不参与</span></td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="alert-box alert-info">
+      <span>💡</span>
+      <div><strong>今日个股结论：能同时拿到「板块资金同向 + 多路资金合力 + 位置不高」三张票的，全场只有中一科技与康强电子两只。</strong>反观三类票今天全部出了问题：<span class="color-red">一是公司自己站出来澄清的（澳弘电子、大亚圣象、优利德）；二是资金与龙虎榜背离的（超声电子）；三是位置在高位而行业在流出的（新华文轩、闽东电力）</span>。<strong>这不是巧合——今天的市场用一整天时间证明了一件事：<span class="color-red">在缩量 3706 亿的环境里，资金只愿意为「能被验证」的标的付钱</span>。涨价函是可验证的（覆铜板出厂价上调 10%），公司澄清也是可验证的，而玄学、封单、名字都不是。</strong></div>
+    </div>
+  </div>
+
+  <!-- Part 3 -->
+  <div class="section">
+    <div class="section-header sh-3"><span class="icon">🔍</span> 三、风险澄清 / 异动监控表 — 排雷第一</div>
+    <div class="alert-box alert-warning">
+      <span>🚨</span>
+      <div><strong>今天的雷区密度是本月最高的一天：14 家公司同日披露异动公告，其中 PCB 链条占了最重的三家。</strong>沿用辟谣七问法：①澄清的是「传闻概念」还是「上涨的全部理由」？②澄清后是否仍按主业逻辑定价？③公司是否同时提示估值极端偏离 / 业绩风险？④公司是否开始主动量化自己的涨幅？⑤市场现在究竟在用哪个理由买它？⑥公司公告与股价走势是否同日反向？⑦涨停当日主力资金方向如何（<span class="color-red">仅适用于换手率 ＞ 5% 的有真实换手的涨停</span>）。<strong>今日三条最重的雷全部命中第①问的加强版——<span class="color-red">不是「占比很小」，而是「这东西根本不算你说它是的那个东西」</span>：大亚圣象说 PCB 纤维板不构成 PCB 组成部分；优利德说 VNA 产品覆盖不了高速 PCB 测试的高频段；澳弘电子则直接自认非理性炒作（第④问）。按规则 17，今日上涨占比 34%、晋级率 37.5%，属降温日，<span class="color-red">一票否决全部生效，不设豁免</span>。</strong></div>
+    </div>
+    <div style="overflow-x:auto">
+    <table>
+      <thead>
+        <tr><th>股票</th><th>连板 / 位置</th><th>市场传闻 / 买入理由</th><th>公告 / 澄清内容</th><th>公告后走势</th><th>雷区等级</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="stock-name">大亚圣象</span><br><span class="stock-code">000910</span></td>
+          <td>4 连板</td>
+          <td class="text-left">市场按「PCB 涨价链 + 覆铜板」买入，把它当作板材环节的低位补涨</td>
+          <td class="text-left"><strong>澄清（9/22 晚间）：主营为地板、人造板和铝板带；人造板中的「超薄 PCB 纤维板」<span class="color-red">不属于电子元器件，不构成 PCB 的组成部分</span>，仅垫在待钻孔覆铜板下方起辅助和保护作用，收入占比小。</strong>同步披露 H1 归母净利 −1.94 亿元、同比 −643.59%</td>
+          <td class="text-left">9/23 仍封 4 连板（公告次日未回落）</td>
+          <td><span class="tag tag-danger">🔴 一票否决</span><br>规则 6 命中：市场买的是「它是 PCB」，公司说「它不是 PCB」——连占比争议都不存在，直接否定了身份</td>
+        </tr>
+        <tr>
+          <td><span class="stock-name">优利德</span><br><span class="stock-code">688628</span></td>
+          <td>20cm 涨停（近三日 +42.32%）</td>
+          <td class="text-left">市场按「矢量网络分析仪（VNA）+ AI PCB 交付良率检测 + 高速连接器测试」买入，纳入 PCB 产业链「卖铲子」环节</td>
+          <td class="text-left"><strong>澄清：公司 VNA4000 / VNA3000 系列产品频率仅覆盖 100kHz 至 9GHz，<span class="color-red">暂不覆盖高速连接器 / 线缆 / 高端 PCB 测试所需的高频段（67GHz 及以上），尚不具备相关测试能力</span>。</strong>同期高速 PCB 与光模块扩产带来的检测需求属于市场推演</td>
+          <td class="text-left">公告当日仍 20cm 涨停，机构净买入 1.27 亿居首</td>
+          <td><span class="tag tag-danger">🔴 一票否决</span><br>规则 6 加强版：澄清的是产品能力边界，比「占比很小」更硬——不是份额小，是技术上做不到</td>
+        </tr>
+        <tr>
+          <td><span class="stock-name">澳弘电子</span><br><span class="stock-code">605058</span></td>
+          <td>9 天 7 板（全场最高标）</td>
+          <td class="text-left">市场按「覆铜板涨价 10% 的直接受益者 + 泰国基地产能」买入，是 PCB 涨价链的情绪标杆</td>
+          <td class="text-left"><strong>公告：3 日涨幅偏离值累计超 20%、累计换手 50.91%；近 10 日累计上涨 97.71%、平均换手 12.72%；H1 归母净利同比 −17.89%、扣非同比 −38.73%；泰国基地尚处认证及小批量阶段；<span class="color-red">公司自认「存在市场情绪过热和非理性炒作情形，当前股价已处历史高位，累计涨幅显著偏离基本面，可能出现短期上涨后快速大幅回调的风险」</span>。</strong>经自查不存在应披露未披露重大信息</td>
+          <td class="text-left">公告为盘后披露，当日仍涨停收 58.60</td>
+          <td><span class="tag tag-danger">🔴 一票否决</span><br>第④问最强形态（规则 32b）：公司主动量化自己的涨幅 + 自认非理性炒作</td>
+        </tr>
+        <tr>
+          <td><span class="stock-name">南威软件</span><br><span class="stock-code">603636</span></td>
+          <td>异动（3 日涨幅偏离累计 20%）</td>
+          <td class="text-left">市场按「AI 应用 / 政务智能体 / 智能体平台」买入，属计算机方向的情绪标的</td>
+          <td class="text-left"><strong>公告：市场对公司 AI 应用业务关注度较高，<span class="color-red">公司政务智能体、WellWork 智能体平台相关业务尚处市场开拓初期，截至 2026 年半年度尚未形成收入</span>，未来收入存在不确定性，对业绩影响较小。</strong></td>
+          <td class="text-left">龙虎榜净买入 1651.8 万元，<span class="signal-down">但主力资金净流出 2287.5 万元</span></td>
+          <td><span class="tag tag-warning">🟠 高风险</span><br>「零收入概念」——澄清的虽非全部上涨理由，但把业绩锚点彻底清零</td>
+        </tr>
+        <tr>
+          <td><span class="stock-name">新华传媒</span><br><span class="stock-code">600825</span><br><br><span class="stock-name">新华文轩</span><br><span class="stock-code">601811</span></td>
+          <td>3 连板（一字）<br>／4 连板</td>
+          <td class="text-left">文化传媒 + 并购重组（国资整合预期）</td>
+          <td class="text-left"><strong>公告：提示股价短期涨幅较大、存在情绪过热和非理性炒作风险；经核实不存在应披露未披露的重大事项。</strong>同期传媒板块整体 −2.55% 领跌全场，行业净流出 36.22 亿——<span class="color-red">板块已从「政策炒作」退化为「重组个股行情」</span></td>
+          <td class="text-left">新华传媒一字 3 板（封单超亿元）、新华文轩 4 板；<span class="signal-down">但新华文轩主力净流出 6247 万、龙虎榜净卖 916 万</span></td>
+          <td><span class="tag tag-warning">🟠 高风险</span><br>同 9/22 规则 32b 类型；板块已在退潮，残存高度靠重组属性单独支撑</td>
+        </tr>
+        <tr>
+          <td><span class="stock-name">华媒控股</span><br><span class="stock-code">000607</span></td>
+          <td>3 日涨幅偏离累计 20%</td>
+          <td class="text-left">「华」字辈玄学 + 传媒概念</td>
+          <td class="text-left"><strong>公告披露：9/22 控股股东卖出 530.54 万股</strong>；公司股票连续三日涨幅偏离值累计达 20%</td>
+          <td class="text-left"><span class="signal-down">当日跌停</span></td>
+          <td><span class="tag tag-danger">🔴 一票否决</span><br>股东减持 + 玄学属性，属规则 34 清算序列的中位跟风股</td>
+        </tr>
+        <tr>
+          <td><span class="stock-name">富信科技</span><br><span class="stock-code">688662</span></td>
+          <td>3 日涨幅偏离累计 30%</td>
+          <td class="text-left">半导体热电 / 温控器件</td>
+          <td class="text-left">披露股票交易异常波动公告（连续 3 个交易日收盘价涨幅偏离值累计达 30%）</td>
+          <td class="text-left">收 130.61；<span class="signal-up">龙虎榜净买入 1.14 亿元、主力资金净流入 3418.4 万</span>——异动但资金仍在</td>
+          <td><span class="tag tag-orange">🟡 关注</span><br>异动公告属程序性披露，未出现澄清 / 自认炒作，按资金方向跟踪</td>
+        </tr>
+        <tr>
+          <td><span class="stock-name">闽东电力</span><br><span class="stock-code">000993</span></td>
+          <td>前期高位人气股（一字跌停）</td>
+          <td class="text-left">电力 + 前期玄学高位，9/22 曾为市场情绪标杆</td>
+          <td class="text-left"><strong>已新进重点监控名单（交易所监管口径）。</strong>此前公司未主动澄清，属监管先行介入的类型</td>
+          <td class="text-left"><span class="signal-down">一字跌停 −10.00%</span>，龙虎榜净买入 6348.63 万（博反弹资金）</td>
+          <td><span class="tag tag-danger">🔴 一票否决</span><br>规则 32：监管工作函 / 重点监控一票否决，且不受情绪开关豁免</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="alert-box alert-danger">
+      <span>🛑</span>
+      <div><strong>本期最值得沉淀的一条排雷经验：澄清公告也分等级，市场对它们的反应完全不同。</strong>今天的三个等级清清楚楚：<span class="color-red">①「身份否定型」——大亚圣象（不构成 PCB 组成部分）、优利德（技术上覆盖不了高频段），杀伤力最大，因为买入理由被从根上抽掉；②「占比澄清型」——收入占比小、影响不大，属规则 6 的经典形态；③「程序性异动披露」——富信科技这类，只是价格偏离触发的例行公告，不构成否证。</span><strong>新增判据：<span class="color-red">看到「占比很小」先别急，要看市场买的是不是「它是哪个板块的」——如果市场买的就是它的板块身份，占比再辩也无效（规则 6）；但若市场买的是产业政策方向（如固态电池的 2030 规模化目标），公司澄清业务占比则不构成否证（规则 45 的边界）。今日大亚圣象与优利德都属前者，市场买的正是身份，因此一票否决成立。</span></strong></div>
+    </div>
+  </div>
+<!-- Part 4 -->
+  <div class="section">
+    <div class="section-header sh-4"><span class="icon">🧠</span> 四、复盘核心逻辑框架 — 大神思维</div>
+    <div class="logic-box">
+      <div class="sub-title">① 龙头 对 杂毛 怎么分（今日实战版）</div>
+      <div class="logic-grid">
+        <div class="logic-card">
+          <h4>🦁 今日「真龙头」特征</h4>
+          <p><span class="key">中一科技</span>：20cm 涨停，龙虎榜净买 2.16 亿（全场第二）、深股通净买 1.04 亿居首、游资净买 2.16 亿居首、机构净买 3123 万，<span class="key">四方同向且所属概念资金居首</span>。<span class="key">康强电子</span>：龙虎榜净买 2.78 亿居全场第一（占成交 18.81%），机构 +6176 万、深股通 +4742 万、营业部 +1.69 亿，<span class="key">位置只在首板</span>。<span class="key">电科思仪</span>：6 家机构专用席位同现前五，机构净买 1.21 亿。共同点：<span class="key">有真实换手 + 多路资金同向 + 所属板块资金为正</span>。</p>
+        </div>
+        <div class="logic-card green-card">
+          <h4>🐀 今日「杂毛 / 伪龙头」特征</h4>
+          <p><span class="key">大亚圣象</span>：4 板，公司说「超薄 PCB 纤维板不构成 PCB 组成部分」，H1 归母净利 −1.94 亿。<span class="key">优利德</span>：20cm 连板，公司说 VNA 覆盖不了高速 PCB 测试高频段。<span class="key">澳弘电子</span>：9 天 7 板，公司自认「情绪过热、非理性炒作」。<span class="key">超声电子</span>：主力净流入 4.46 亿 vs 龙虎榜净卖 1.31 亿。共同点：<span class="key">买入理由扛不住一份澄清公告</span>。</p>
+        </div>
+      </div>
+      <div class="alert-box alert-warning" style="margin-left:0;margin-right:0">
+        <span>💡</span>
+        <div><strong>今日分水岭：买入理由能不能扛住一份澄清公告。</strong>昨天（9/22）的分水岭是「能不能被数据验证」，今天这条规则自动进化了一级——<span class="color-red">不只是能不能验证，而是「公司自己会不会站出来否定你」</span>。大亚圣象的澄清最典型：市场买它是把它当 PCB 链的板材环节，公司公告清清楚楚地说「不属于电子元器件、不构成 PCB 组成部分」——<span class="color-red">这不是占比问题，是身份问题</span>。<strong>要写进日常检查表的新动作：在追一个「新贴上某个热门标签」的票之前，先看它有没有同类澄清公告落地，或者这个标签跟它主营的物理关系是否成立。今天的覆铜板涨价链里，真正的链条是「电子布 → 覆铜板 → PCB → 铜箔/树脂」，凡不在这条物理链条上的跟风票，都是随时可能被公告打掉的。</strong></div>
+      </div>
+
+      <div class="sub-title">② 题材质量四维评估（当前版本）</div>
+      <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>题材</th><th>政策力度</th><th>产业逻辑</th><th>资金认可</th><th>广度</th><th>综合</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-left font-bold">PCB / 覆铜板涨价链</td>
+            <td>★★★☆☆（无直接政策，属产业自发提价）</td>
+            <td>★★★★★（涨价函可验证、成本传导自上而下打通）</td>
+            <td>★★★★☆（<span class="signal-up">PET 铜箔概念净流入 25.86 亿居概念首位</span>；电子行业成交 4970.79 亿居全行业第一；<span class="color-red">但电子行业整体净流出 48.17 亿</span>）</td>
+            <td>★★★★☆（涨停超 10 只，覆盖材料 / 设备 / 检测三段）</td>
+            <td><span class="tag tag-red">4.2 — 唯一可给仓位</span></td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">玻璃基板 / 科学仪器（VNA）</td>
+            <td>★★★☆☆（间接受益 AI 硬件扩产）</td>
+            <td>★★★★☆（设备侧需求真实，但属「卖铲子」分支）</td>
+            <td>★★★☆☆（沃格光电个股净流入居首，<span class="color-red">优利德主力口径反而净流出</span>）</td>
+            <td>★★★☆☆（普源精电、莱伯泰科、优利德、东方中科）</td>
+            <td><span class="tag tag-orange">3.6 — 只做首板，且须避开已澄清标的</span></td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">创新药 / CRO</td>
+            <td>★★★★★（生物医药列为新兴支柱产业）</td>
+            <td>★★★★☆（创新药 BD 交易总额破 1200 亿美元、订单复苏）</td>
+            <td>★★★☆☆（机构净买义翘神州 8852 万，<span class="color-red">但医药行业整体未进净流入前七</span>）</td>
+            <td>★★☆☆☆（中小盘集中，龙头仅微涨）</td>
+            <td><span class="tag tag-blue">3.4 — 按分支跟踪，不做板块</span></td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">房地产产业链</td>
+            <td>★★★★☆（存量时代定调、公积金条例修订）</td>
+            <td>★★☆☆☆（超跌修复 + 成交回暖，非基本面反转）</td>
+            <td>★★★☆☆（地产服务 <span class="signal-up">+10.34 亿居行业首位</span>，但<span class="color-red">行业指数仅 +0.02%</span>）</td>
+            <td>★★☆☆☆（3 板梯队，午后集体炸板）</td>
+            <td><span class="tag tag-orange">3.0 — 资金第一但涨幅倒数，只做日内</span></td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">出版传媒 / 文化传媒</td>
+            <td>★★★☆☆（规划已完全兑现完毕）</td>
+            <td>★★☆☆☆（残存高度全靠并购重组属性）</td>
+            <td>★☆☆☆☆（<span class="signal-down">行业净流出 36.22 亿、板块 −2.55% 跌幅第一</span>）</td>
+            <td>★★☆☆☆（仅剩三只重组票）</td>
+            <td><span class="tag tag-danger">2.0 — 主线撤销</span></td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+
+      <div class="sub-title">③ 跟风反推票识别清单（今日对照）</div>
+      <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>标的</th><th>被谁带起来</th><th>自身有无独立逻辑</th><th>反推身位</th><th>结论</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-left font-bold">胜利精密 / 依顿电子 / 江南新材 / 集泰股份</td>
+            <td class="text-left">澳弘电子 7 板 + 覆铜板涨价 10%</td>
+            <td class="text-left">在真实物理链条上（铜箔 / 树脂 / 覆铜板 / PCB），有产业传导</td>
+            <td>半独立</td>
+            <td><span class="tag tag-blue">可跟踪首板；胜利精密龙虎榜净买 1.74 亿、游资净买 1.51 亿</span></td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">莱伯泰科 / 东方中科 / 鼎阳科技</td>
+            <td class="text-left">优利德、普源精电 VNA 概念发酵</td>
+            <td class="text-left">仪器仪表有独立的国产替代逻辑</td>
+            <td>半独立</td>
+            <td><span class="tag tag-orange">谨慎：分支龙头优利德已被公司澄清，分支整体承压</span></td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">三峡新材 / 福建水泥 / 天山股份</td>
+            <td class="text-left">地产链政策 + 我爱我家 3 板</td>
+            <td class="text-left">建材端有成交回暖的边际逻辑，但属滞后环节</td>
+            <td>反推为主</td>
+            <td><span class="tag tag-orange">只做日内：三峡新材龙虎榜净买 9124.78 万、福建水泥 6679 万</span></td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">万向德农 / 金健米业</td>
+            <td class="text-left">农业 / 粮食安全偶发异动</td>
+            <td class="text-left">无当日催化，纯资金博弈</td>
+            <td><span class="color-red">纯反推</span></td>
+            <td><span class="tag tag-danger">不参与（金健米业换手 32.32%、龙虎榜净卖 248.57 万）</span></td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">华媒控股 / 华纺股份</td>
+            <td class="text-left">「华」字辈玄学扩散</td>
+            <td class="text-left">无；且控股股东减持 530.54 万股</td>
+            <td><span class="color-red">纯反推</span></td>
+            <td><span class="tag tag-danger">已跌停，清算序列中位股（规则 34）</span></td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">C沈鼓 / 世纪数码 / 中塑股份</td>
+            <td class="text-left">新股赚钱效应示范</td>
+            <td class="text-left">无，纯情绪</td>
+            <td><span class="color-red">纯反推</span></td>
+            <td><span class="tag tag-danger">绝对不参与（规则 39）：世纪数码 30cm 一字跌停、中塑股份 −34.53%</span></td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+
+      <div class="sub-title">④ 情绪周期定位（最重要的一块）</div>
+      <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>日期</th><th>涨停</th><th>跌停</th><th>特征</th><th>周期阶段</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>9/9 周三</td><td>48家</td><td>—</td><td class="text-left">百大 5 板封神，分歧</td><td><span class="tag tag-warning">分歧</span></td></tr>
+          <tr><td>9/10 周四</td><td>35家</td><td>—</td><td class="text-left">农业崩塌 + 辟谣潮</td><td><span class="tag tag-green">退潮确认</span></td></tr>
+          <tr><td>9/11 周五</td><td>40家</td><td>21家</td><td class="text-left">放量深 V 1.97 万亿，新主线确立</td><td><span class="tag tag-blue">修复初期</span></td></tr>
+          <tr><td>9/14 周一</td><td>55家</td><td>16家</td><td class="text-left">缩量 1.63 万亿，晋级率 57%，题材高切低</td><td><span class="tag tag-purple">修复中继（已证伪）</span></td></tr>
+          <tr><td>9/15 周二</td><td>32家</td><td>34家</td><td class="text-left">量能 1.61 万亿年内最低，跌停反超涨停</td><td><span class="tag tag-danger">修复夭折 · 二次出清</span></td></tr>
+          <tr><td>9/16 周三</td><td>89家</td><td>4家</td><td class="text-left">放量 1.84 万亿，科创 50 +4.14%，科技单主线</td><td><span class="tag tag-red">出清结束 · 结构修复</span></td></tr>
+          <tr><td>9/17 周四</td><td>47家</td><td>2家</td><td class="text-left">缩量 1.82 万亿，1 进 2 仅 6.49%，炸板率 29.85%</td><td><span class="tag tag-warning">修复中继 · 分歧检验期</span></td></tr>
+          <tr><td>9/18 周五</td><td>80家</td><td>1家</td><td class="text-left">放量 2.08 万亿（+2540 亿），上涨占比 76.25%，晋级率 44.44%，半导体单主线 + 电子净流入 206 亿</td><td><span class="tag tag-red">增量型普涨 · 放量修复期</span></td></tr>
+          <tr><td>9/21 周一</td><td>105家</td><td>2家</td><td class="text-left">缩量守 2.03 万亿（−456 亿），上涨占比 81.69%，晋级率 66.67%，封板率 77.21%，30 余只「华」字辈涨停，电子 −26 亿 / 医药 +63.65 亿</td><td><span class="tag tag-warning">存量博弈型普涨 · 高低切换期</span></td></tr>
+          <tr><td>9/22 周二</td><td>64家</td><td>5家</td><td class="text-left">放量 2.1356 万亿（<span class="signal-up">+1040 亿</span>）但<span class="signal-down">上涨占比暴跌至 42%</span>、晋级率 <span class="signal-down">33.33%</span>、昨日涨停股仅 59.43% 上涨；最高板反升至 6 板（华瓷一字）、连板 24 只；「华」字辈中位股崩塌（华软 −9.54%、华纺 −7.97%）；计算机 +34.36 亿 / 传媒 +29.33 亿净流入，通信 −43.88 亿 / 机械 −38.32 亿 / 电子 −29.94 亿 / 医药 −23.07 亿净流出</td><td><span class="tag tag-danger">放量分歧 · 退潮初段</span></td></tr>
+          <tr><td class="font-bold">9/23 周三</td><td class="font-bold">51家</td><td class="font-bold">14家</td><td class="text-left">缩量 1.76 万亿（沪深 <span class="signal-down">−3706 亿 / −17.4%</span>），上涨占比 <span class="signal-down">34%</span>，晋级率 <span class="signal-up">37.5%</span> 但 <span class="color-red">1 进 2 仅 7.7%</span>；最高板由 6 板降至 <span class="signal-down">4 板</span>（大亚圣象 / 新华文轩）、连板 12 只；<span class="color-red">传媒 −2.55% 跌幅第一、计算机净流出 50.57 亿</span>（昨日两大流入方向双双反转）；<span class="signal-up">PCB 涨价链逆势抱团</span>（PET 铜箔 +2.46%、概念净流入 25.86 亿、澳弘 9 天 7 板、大亚圣象 4 板、中一科技 20cm）；华瓷股份停牌核查复牌即断板、收 +6.95% 换手骤升至 23.11%；<span class="color-red">三家公司同日澄清（澳弘 / 大亚圣象 / 优利德）</span></td><td><span class="tag tag-warning">缩量退潮 · 高低切换</span></td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="sub-note">口径说明：本序列涨停 / 跌停家数尽量采用不含 ST 股、退市股、未开板新股的口径。9/23 当日存在并行口径：涨停 51 只（主流）与 53 只（含部分 ST）；跌停 14 只（主流）与约 15 只（含 ST）；封板率 66%（财联社口径，炸板 26 只）；成交额沪深两市 1.76 万亿（另有沪深京三市 1.7831 万亿口径）；晋级率 37.5%（连板股总数 12 只、其中 3 板及以上 9 只，上一交易日连板股 24 只）。本文正文采用 51 只 / 14 只，以便与上一期 64 只 / 5 只同口径对比。</div>
+      <div class="alert-box alert-warning">
+        <span>📍</span>
+        <div><strong>周期定位：缩量退潮 · 高低切换 —— 昨天放的那 1040 亿今天被全额撤回，而且 <span class="color-red">换轨继续</span>。</strong>五条依据：①<span class="color-red">涨停 64 → 51 只、上涨占比 42% → 34%、跌停 5 → 14 只（近三倍）、成交额缩量 3706 亿（−17.4% 至 1.76 万亿），广度与量能同步恶化</span>；②高度继续缩圈：<span class="signal-down">最高板 6 板 → 4 板、连板股 24 → 12 只</span>，规则 41 的「缩圈式退潮」第 2 次验证；③晋级率是唯一改善项（33.33% → 37.5%），但<span class="color-red">内部结构严重背离——2 板以上晋级率 37.5% 而 1 进 2 仅 7.7%（3/39），骤降 13.3pct</span>，即新规则 50 的「中位断层型退潮」；④<span class="color-green">资金没有离场，只是从「面」缩到「点」</span>：一边高位投机链崩塌（传媒 −2.55%、世纪数码 30cm 一字跌停、中塑股份 −34.53%），一边 PCB 涨价链与地产服务逆势抱团；⑤量能回到 1.76 万亿、<span class="color-red">低于 1.8 万亿阈值</span>，按规则 1 与规则 10，题材再硬只给轻仓试错额度。<strong>综合定性：不是全面退潮，而是「换轨型缩圈」——判定依据是资金仍在场内且有明确承接方向（PCB 涨价链）；但要高度警惕一点：<span class="color-red">今天的承接方向，正是明天澄清公告最密集的方向</span>。</strong></div>
+      </div>
+
+      <div class="sub-title">⑤ 今日题材脉络（资金去哪了）</div>
+      <div class="sub-note">缩量 3706 亿的出金日，钱从「面」缩到「点」——从计算机 / 传媒搬到 PCB 涨价链：</div>
+      <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>方向</th><th>资金动向</th><th>解读</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-left font-bold">PCB / 覆铜板涨价链</td>
+            <td class="text-left">PET 铜箔概念主力净流入 <span class="signal-up">+25.86 亿元居概念首位</span>（+2.46%）；电子行业成交 <span class="signal-up">4970.79 亿元居全行业第一</span>；覆铜板板块指数 +3.13%、玻璃基板 +2.16%、先进封装 +1.43%、PCB 概念 +1.39%；<span class="color-red">但电子行业整体净流出 48.17 亿元</span></td>
+            <td class="text-left">今日唯一「催化可验证 + 梯队完整 + 资金同向」的方向。<span class="color-red">注意这是「局部抱团」而非「全行业流入」——硬件侧整体仍在派发，涨价链只是其中最硬的一段</span>。按规则 51，涨价函类催化属可验证的经营变量，不适用「政策印发逾一周」的时效限制</td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">个股资金净流入前列</td>
+            <td class="text-left">沃格光电 <span class="signal-up">+11.27 亿</span>（特大单 +13.57 亿）、沪电股份 +10.26 亿、佰维存储 +9.09 亿、江淮汽车 +7.99 亿、长鑫科技 +6.95 亿、科华数据 +5.18 亿、国瓷材料 +4.74 亿、万科A +4.71 亿、铜冠铜箔 +4.50 亿、超声电子 +4.45 亿、中一科技 +4.11 亿；<span class="color-red">信息技术板块 11 股合计吸金超 62 亿元</span></td>
+            <td class="text-left">存量资金在缩量中的集中调仓。<strong>关键旁证：单日特大单全市场净流出 147.18 亿元</strong>——说明这不是增量入场，而是存量搬家，与成交额缩量 3706 亿互相印证</td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">高位算力 / 光模块（净流出）</td>
+            <td class="text-left">新易盛 <span class="signal-down">−12.58 亿</span>、瑞芯微 <span class="signal-down">−11.07 亿</span>、东山精密 <span class="signal-down">−10.69 亿</span>、亨通光电 <span class="signal-down">−8.32 亿</span>（另据其他口径，瑞芯微 / 新易盛 / 东山精密净流出均超 13.5 亿，居全市场前三）</td>
+            <td class="text-left">昨日「机构型吸金」的科技硬件高位股今日被集中派发。<strong>按规则 25，单日资金极值未获次日验证即整体降级——存储 / 元件方向本期降为观察，不做仓</strong></td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">计算机 / 传媒（昨日流入第一、第二）</td>
+            <td class="text-left">计算机 <span class="signal-down">净流出 50.57 亿元</span>（板块 −1.42%）；传媒 <span class="signal-down">净流出 36.22 亿元</span>（板块 <span class="signal-down">−2.55%，全场跌幅第一</span>）；中文传媒、中信出版 −12%、华媒控股、中视传媒、龙版传媒批量跌停</td>
+            <td class="text-left"><span class="color-red">规则 20 第 4 次实证：单日行业资金第一只提供「发现」，不提供「确认」</span>。本期进一步细化——当第一日资金流入方向缺少「3 板以上完整梯队」时，第二日证伪概率显著提高（昨日高度仅内蒙新华 5 板一只）</td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">房地产服务</td>
+            <td class="text-left">板块 <span class="signal-up">+3.31% 居申万行业首位</span>、行业主力净流入 <span class="signal-up">+10.34 亿元居首</span>，<span class="color-red">但房地产行业指数仅 +0.02%</span>；万科A 主力净流入 4.71 亿、我爱我家 3 连板；<span class="signal-down">午后万科A、中华企业、世联行集体炸板</span></td>
+            <td class="text-left">资金第一但涨幅倒数，属典型的「指数不动、个股抱团」。<strong>按规则 20，只做日内不给隔夜仓；且政策已进入第二周，边际递减明显</strong></td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">两融杠杆资金</td>
+            <td class="text-left">沪深北两融余额 <span class="signal-down">26550.08 亿元（较前一交易日 −13.00 亿）</span>；融资余额 <span class="signal-down">26253.13 亿元（−10.44 亿）</span>、融券余额 296.94 亿（−2.57 亿）；沪市 −1.63 亿、深市 −11.53 亿、北交所 +0.16 亿</td>
+            <td class="text-left"><strong>杠杆资金由增转减。</strong>按规则 38 的边界条款：融资余额由增转减且伴随量能缩量 ＞ 15% 时，判定为「节前主动降杠杆」而非「被动平仓」——<span class="color-red">此时不额外降仓，但也不恢复打板</span></td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">龙虎榜</td>
+            <td class="text-left">上榜 54 只（南方财经口径）/ 59 只（同壁财经口径）/ 40 只（证券时报深市口径），<span class="color-red">口径差异较大</span>；<strong>机构合计净买入 3.02—3.31 亿元</strong>（净买 17 股 / 净卖 9—10 股），机构净买前三：优利德 +1.27 亿、电科思仪 +1.21 亿、康强电子 +6176 万；北向合计净买入 2.39 亿元（深股通 +2.2 亿、沪股通 +0.19 亿）；<span class="signal-down">净卖出第一：超声电子 −1.31 亿</span></td>
+            <td class="text-left">机构结束了连续两日净卖出（9/21 −2.45 亿、9/22 −4.50 亿）转为小幅净买入，<span class="color-red">但量级极小，且净买集中在仪器仪表与半导体材料这两个窄方向</span>；同时北向净买居首的是中一科技，与游资、机构同向</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="alert-box alert-info" style="background:#eef7ff;border:1px solid #74b9ff">
+        <span>💰</span>
+        <div><strong>一句话：缩量 3706 亿的「出金日」里，钱既没进场也没离场，只是从「面」缩到了「点」。</strong>昨天站在资金第一的计算机与传媒，今天一个净流出 50.57 亿、一个跌幅全场第一；而昨天的低位涨价链今天拿到了概念的净流入第一。这不是简单的板块轮动，<span class="color-red">而是「可验证性」在缩量环境下的溢价</span>——贵州茅台式的宽基抱团没有了，剩下的钱只愿意买「能拿计算器算出来」的东西（覆铜板涨 10%、A 股 H1 净利下滑、VNA 频率上限 9GHz）。<strong>明天要盯两件事：①PCB 涨价链能不能续上第二天资金（规则 20 的第二次检验）；②1 进 2 晋级率能不能从 7.7% 修复——这是新规则 50 里「中位断层」能否打通的唯一信号。</strong></div>
+      </div>
+
+      <div class="sub-title">⑥ 明日（9/24 周四）交易计划框架</div>
+      <div class="logic-grid">
+        <div class="logic-card">
+          <h4>🎯 核心思路</h4>
+          <p>缩量退潮 + 中位断层，<span class="key">仓位维持 2 成，只做日内与低位低吸，禁止 3 板以上接力</span>（新规则 50：1 进 2 仅 7.7%）。方向<span class="key">只看 PCB / 覆铜板涨价链一条线</span>，且<span class="key">只做链条内的首板与低位，不碰高标</span>（澳弘 9 天 7 板已自认非理性炒作）。<span class="key">9/24 是长假前最后一个交易日</span>（9/25 起中秋休市），尾盘完成仓位规划，<span class="key">绝不被动持仓过节</span>。</p>
+        </div>
+        <div class="logic-card green-card">
+          <h4>🛡️ 防守底线</h4>
+          <p>① <span class="key">三类澄清一票否决</span>：身份否定型（大亚圣象）、能力边界型（优利德）、自认炒作型（澳弘电子）；② <span class="key">重点监控不参与</span>（闽东电力）；③ 资金与龙虎榜背离的标的（超声电子）<span class="key">次日开盘半小时定生死</span>；④ 一字板无换手不参与；⑤ <span class="key">近端次新与换手 ＞ 50% 的次新绝对不参与</span>；⑥ 量能连续两日低于 1.8 万亿时，题材再硬只给轻仓试错额度（规则 1）；⑦ <span class="key">节前不留隔夜仓</span>。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+<!-- Part 5 -->
+  <div class="section">
+    <div class="section-header sh-5"><span class="icon">⚔️</span> 五、交易决策矩阵</div>
+    <div class="alert-box alert-success">
+      <span>📈</span>
+      <div><strong>相比昨日的变化（三项降级、一项升级、一项新增判据）：</strong>①「题材质量」<span class="color-green">计算机与传媒从候选直接降为撤销</span>——一天之内从资金第一变成流出第一与跌幅第一；PCB 涨价链升为唯一可给仓位方向；②「量能」<span class="color-green">从 2.1356 万亿跌破 1.8 万亿阈值至 1.76 万亿</span>，按规则 1 进入「题材再硬只给轻仓试错」区间；③「市场情绪」<span class="color-red">晋级率小幅回升（33.33% → 37.5%）是唯一升级项</span>，但被 1 进 2 的 7.7% 抵消；④「个股定位」新增判据——<span class="color-red">澄清公告分三级：身份否定型 ＞ 能力边界型 ＞ 占比澄清型，本次三型同时出现</span>；⑤「位置高低」高度继续缩圈，最高板 6 → 4 板。</div>
+    </div>
+    <div style="overflow-x:auto">
+    <table>
+      <thead>
+        <tr><th>维度</th><th>✅ 可做（满分信号）</th><th>⚠️ 谨慎（减分信号）</th><th>🚫 不做（一票否决）</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="text-left font-bold">题材质量</td>
+          <td class="text-left">PCB / 覆铜板涨价链：<span class="color-red">PET 铜箔概念净流入 25.86 亿居概念首位 + 涨价函可验证 + 梯队完整（澳弘 9 天 7 板 / 大亚圣象 4 板 / 中一科技 20cm）</span></td>
+          <td class="text-left">玻璃基板与科学仪器（个股强行业弱，分支龙头已被澄清）；CRO / 创新药（政策强资金弱，按分支跟踪）；房地产服务（资金第一但行业指数仅 +0.02%）</td>
+          <td class="text-left">传媒（净流出 36.22 亿、−2.55% 跌幅第一）与计算机（净流出 50.57 亿）；近端次新与新股；玄学聚合（「华」字辈清算中）</td>
+        </tr>
+        <tr>
+          <td class="text-left font-bold">个股定位</td>
+          <td class="text-left">真实换手 + 多路资金同向 + 板块资金为正：中一科技（机构 / 北向 / 游资四方共振）、康强电子（龙虎榜净买 2.78 亿居首且位置仅首板）、胜利精密（净买 1.74 亿）</td>
+          <td class="text-left">资金与龙虎榜背离（超声电子）；机构买而游资卖（江淮汽车、优利德）；连板但主力净流出（新华文轩 −6247 万）；权重 2 板（江淮汽车）；价量背离的地产中军（万科A 炸板）</td>
+          <td class="text-left"><strong>公司自认非理性炒作</strong>（澳弘电子）+ <strong>身份否定型澄清</strong>（大亚圣象「不构成 PCB 组成部分」）+ <strong>能力边界型澄清</strong>（优利德「不具备高频测试能力」）+ <strong>监管重点监控</strong>（闽东电力）+ 股东减持叠加玄学（华媒控股）</td>
+        </tr>
+        <tr>
+          <td class="text-left font-bold">澄清排查<br>（七问 + 边界）</td>
+          <td class="text-left">无澄清 + 主业落在真实物理链条上 + 板块资金为正（中一科技、康强电子、胜利精密）</td>
+          <td class="text-left">程序性异动披露但资金仍流入（富信科技）；「零收入概念」（南威软件：智能体业务尚未形成收入）</td>
+          <td class="text-left"><strong>降温日一票否决全部生效</strong>：三类澄清（身份否定 / 能力边界 / 自认炒作）+ 监管工作函或重点监控 + 澄清后仍封板（大亚圣象、优利德当日仍涨停，属最险形态）</td>
+        </tr>
+        <tr>
+          <td class="text-left font-bold">位置高低</td>
+          <td class="text-left">首板 + 资金共振（康强电子、胜利精密）</td>
+          <td class="text-left">链条内趋势股回踩低吸；4 板但已澄清（大亚圣象、新华文轩）</td>
+          <td class="text-left">9 天 7 板最高标（澳弘电子）；一字板无换手（新华传媒）；跌停崩塌股的任何反弹（闽东电力）；近端次新与换手 ＞ 50% 的次新</td>
+        </tr>
+        <tr>
+          <td class="text-left font-bold">市场情绪</td>
+          <td class="text-left">晋级率小幅回升（33.33% → <span class="signal-up">37.5%</span>）；4 板梯队未归零、2 板以上晋级率 37.5%（高位仍有承接）</td>
+          <td class="text-left"><span class="color-red">缩量 3706 亿（−17.4%）至 1.76 万亿，跌破 1.8 万亿阈值</span>；上涨占比 34%；跌停由 5 只增至 <span class="signal-down">14 只</span>；封板率 66%、炸板 26 只</td>
+          <td class="text-left">跌停反超涨停（<span class="tag tag-green">今日 51 vs 14，未触发</span>）；晋级率 ＜ 20%（<span class="tag tag-green">今日 37.5%，未触发</span>）；量能连续两日 ＜ 1.7 万亿（<span class="tag tag-green">今日 1.76 万亿，未触发</span>）</td>
+        </tr>
+        <tr>
+          <td class="text-left font-bold">隔日溢价</td>
+          <td class="text-left">2 板以上晋级率 37.5%——资金仍愿意在高位接棒</td>
+          <td class="text-left"><span class="color-red">1 进 2 仅 7.7%（3/39），骤降 13.3pct；昨日涨停股今日平均 −0.37%、红盘率 41.79%</span>；首板 39 只、断板显著</td>
+          <td class="text-left"><strong>首板晋级率 ＜ 25% 时只做首板与低吸、不做 2 板以上接力</strong>（规则 47，<span class="tag tag-danger">今日已触发：7.7%</span>）；晋级率跌破 40%（<span class="tag tag-danger">已触发，停止打板</span>）</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="alert-box alert-danger">
+      <span>🎯</span>
+      <div><strong>今日矩阵结论：缩量退潮里的「换轨型缩圈」——可执行策略是「维持 2 成、只做首板与日内、跟一条链、过一个节」。</strong>仓位<span class="color-red">维持 2 成</span>（晋级率 37.5% 仍在 20—40% 区间，规则 26 对应「维持 2 成、只做日内」；首板晋级率 7.7% 触发规则 47 的停止接力条款）。方向只跟 <span class="color-red">PCB / 覆铜板涨价链</span>一条，且必须在<span class="color-red">链条内的首板与低位</span>（铜冠铜箔、东材科技、胜利精密一类），<strong>不碰高标（澳弘电子已自认炒作）、不碰被澄清分支（大亚圣象、优利德）</strong>。<strong>加仓条件（需同时满足两项）：①PET 铜箔概念与电子行业连续第二日同向净流入；②1 进 2 晋级率修复至 20% 以上。减仓 / 清仓条件（任一）：①晋级率跌破 20%，全面退潮确认，清至 1 成；②量能跌破 1.7 万亿，按规则 1 只留 1 成以内；③9/24 尾盘 — <span class="color-red">长假前最后一个交易日，坚决不留隔夜仓位过节</span>。</strong></div>
+    </div>
+  </div>
+
+  <!-- Part 6 -->
+  <div class="section">
+    <div class="section-header sh-6"><span class="icon">📋</span> 六、明日（9/24 周四）重点观察清单</div>
+    <div style="overflow-x:auto">
+    <table>
+      <thead>
+        <tr><th>优先级</th><th>观察标的</th><th>观察逻辑</th><th>触发条件</th><th>行动计划</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tag tag-danger">P0</span></td>
+          <td class="text-left font-bold">PCB / 覆铜板涨价链能否连续第二日资金净流入<br>（规则 20 / 51 的第二日验证）</td>
+          <td class="text-left">今日 <span class="signal-up">PET 铜箔概念净流入 25.86 亿居概念首位</span>、电子行业成交 4970.79 亿居全行业第一、覆铜板板块指数 +3.13%；<span class="color-red">但电子行业整体仍净流出 48.17 亿——是「局部抱团」还是「方向确认」，只有第二天能回答</span>。这是明日第一优先级，也是当前唯一可能给仓位的方向。</td>
+          <td class="text-left">概念与行业再次同向净流入 且 板块不跌</td>
+          <td class="text-left">双双达标 → 涨价链升级为可给仓位方向，仓位给 3 成、允许持有 1—2 日，标的限链条内首板与低位；仅概念流入而行业仍大幅流出 → 维持「局部抱团」定性，仓位 2 成只做日内</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-danger">P0</span></td>
+          <td class="text-left font-bold">超声电子「主力净流入 4.46 亿 vs 龙虎榜净卖 1.31 亿」的次日开盘验证<br>（规则 22）</td>
+          <td class="text-left">换手 <span class="color-red">37.60%</span>、成交 58.53 亿、特大单净流入 3.82 亿，却同时是龙虎榜净卖出第一（机构 −7115 万、深股通 −6040 万、游资 −1.21 亿）。<span class="color-red">这是本期最典型的筹码分歧样本，也决定了 PCB 链中高换手标的的整体评级</span>。</td>
+          <td class="text-left">次日开盘半小时——低开是否回补</td>
+          <td class="text-left">低开且不回补 → 定性为拉高派发，PCB 链条内高换手标的整体降级；低开快速回补并放量 → 按洗盘处理，可在链条内低吸；<strong>纪律：背离未解之前，该类标的绝不隔夜</strong></td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-danger">P0</span></td>
+          <td class="text-left font-bold">1 进 2 晋级率能否从 7.7% 修复<br>（新规则 50 中位断层）</td>
+          <td class="text-left">今日 2 板以上晋级率 37.5%，而 1 进 2 仅 <span class="signal-down">7.7%（3/39）</span>，两者严重背离。<span class="color-red">资金只在高位接棒、不在低位试错——这是「中位断层型退潮」的核心特征，也是明日判断退潮烈度最重要的单一指标</span>。</td>
+          <td class="text-left">1 进 2 晋级率 ≥ 20%</td>
+          <td class="text-left">修复至 20% 以上 → 断层打通，可恢复 2 板低吸；仍 ＜ 10% → 只做首板，<span class="color-red">禁止 2 板以上的一切接力</span>；进一步跌破 5% → 按全面退潮前置信号处理，仓位降至 1 成</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-warning">P1</span></td>
+          <td class="text-left font-bold">澳弘电子（9 天 7 板）澄清公告后的首个完整交易日<br>（规则 32b / 53）</td>
+          <td class="text-left">公司自认「市场情绪过热和非理性炒作」、近 10 日累计上涨 97.71%、H1 扣非 −38.73%；<span class="color-red">公告为今日盘后发布，明日是检验市场是否买账的第一天</span>。按规则 32b，主动量化自身涨幅＝给炒作定天花板。</td>
+          <td class="text-left">是否开板 / 是否放出巨量</td>
+          <td class="text-left">开板并放量 → 涨价链情绪端确认见顶，链内高标一律减仓；仍封板 → 只当作情绪惯性，<span class="color-red">绝不参与</span>；<strong>按规则 24，一字板不用资金方向判据，改用封单 / 流通市值与次日开板风险</strong></td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-warning">P1</span></td>
+          <td class="text-left font-bold">VNA / 科学仪器分支在被公司澄清后的扩散效应<br>（规则 6 的分支版本）</td>
+          <td class="text-left">优利德明确表示产品频率 <span class="color-red">不覆盖高速 PCB 测试所需高频段</span>，而今日普源精电 +20%、莱伯泰科 +20%、电科思仪 +13.64% 同属该分支。<span class="color-red">龙头被澄清后，分支的跟风票面临同样的问题——市场买的理由是分支性的，澄清也是分支性的</span>。</td>
+          <td class="text-left">分支次日是否集体走弱</td>
+          <td class="text-left">集体走弱 → 分支整体撤销；继续强势 → 只允许首板试错、不接力，且必须逐个核对各家是否也有同类澄清</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-warning">P1</span></td>
+          <td class="text-left font-bold">CRO 分支能否延续（规则 52）</td>
+          <td class="text-left">益诺思 <span class="signal-up">+14.42% 创历史新高</span>、奥浦迈 +12.69%、和元生物 +10.71%；义翘神州机构净买 8852 万、龙虎榜净买 1.51 亿；<span class="color-red">但医药生物行业整体未进入净流入前列，龙头（药明康德 +0.06%、恒瑞 −0.31%）几乎不动</span>——属存量资金的窄分支交易。</td>
+          <td class="text-left">板块涨停 ≥ 5 只 且 板块涨幅 ≥ 1%</td>
+          <td class="text-left">达标 → 可给 1 成仓位跟踪「有海外订单与业绩锚点」的分支；不达标 → 按退潮期分支修复处理，只观察不做仓</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-blue">P2</span></td>
+          <td class="text-left font-bold">房地产服务的「资金第一」能否转化为涨幅<br>（规则 20）</td>
+          <td class="text-left">地产服务板块 +3.31% 居申万首位、行业净流入 +10.34 亿居首，<span class="color-red">但房地产行业指数仅 +0.02%，午后万科A、中华企业、世联行集体炸板</span>；我爱我家、华远控股、华丽家族 3 连板但均无机构大额背书。</td>
+          <td class="text-left">行业指数涨 ≥ 1% 或 涨停家数 ≥ 5</td>
+          <td class="text-left">仅资金第一而指数不动 → 继续只做日内；两者同向 → 可给 1 成；<strong>注意政策已进入第二周，边际递减</strong></td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-blue">P2</span></td>
+          <td class="text-left font-bold">节前最后交易日（9/24）的量能与持仓行为</td>
+          <td class="text-left">今日缩量 3706 亿（−17.4%）至 1.76 万亿，两融余额减少 13.00 亿（融资 −10.44 亿）。<span class="color-red">中秋休市 9/25—9/27，国庆休市 10/1—10/7；9/24 是长假前最后一个交易日，资金行为会直接决定节后开盘结构</span>。</td>
+          <td class="text-left">量能是否进一步跌破 1.7 万亿 / 尾盘是否出现集中减仓</td>
+          <td class="text-left">量能跌破 1.7 万亿 → 按规则 1 只留 1 成以内；<span class="color-red">无论何种情形，9/24 尾盘坚决不留隔夜仓位过节</span></td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="alert-box alert-danger">
+      <span>📌</span>
+      <div><strong>明日核心剧本：缩量换轨里，跟着「能算清楚的链条」走，过一个轻仓的节。</strong>今天最重要的一课不是涨跌，而是<span class="color-red">「澄清公告是有等级的」</span>——大亚圣象说「不构成 PCB 组成部分」（身份否定）、优利德说「覆盖不了高频段」（能力边界）、澳弘电子直接自认「非理性炒作」；三家公司同一天、同一根链、三种否证方式，把「按板块标签买入」这条路一次性打穿。<strong>明天只有三件事值得做：①看 PCB 涨价链能不能续上第二天资金（概念 +25.86 亿 / 行业 −48.17 亿的矛盾只有明天能解）；②看超声电子那对背离数据（主力 +4.46 亿 vs 龙虎榜 −1.31 亿）在开盘半小时给出什么答案；③看 1 进 2 能不能从 7.7% 修复——它决定的是「明天还能不能做 2 板」，而不是「明天能不能做」。</strong><strong>绝对纪律：三类澄清一票否决；重点监控不参与；资金与龙虎榜背离的标的绝不隔夜；一字板无换手不参与；近端次新与换手 ＞ 50% 的次新绝对不参与；量能连续两日低于 1.8 万亿只给轻仓试错。</strong>仓位纪律：<span class="color-red">维持 2 成，停止一切打板，只做首板与链条内低吸</span>；晋级率跌破 20% 清至 1 成，量能跌破 1.7 万亿只留 1 成，<span class="color-red">9/24 尾盘不留隔夜仓位过节</span>。<strong>节前的钱最贵，活下来之后，才是赚快钱。</strong></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    📅 复盘日期：2026年9月23日（周三，A股收盘后）｜ 数据来源：交易所行情 · 财联社 · 证券时报 · 数据宝 · 东方财富 · 南方财经 · 同壁财经 · 每日经济新闻 · 21 财经 · 新浪财经 · 同花顺 · 云杉网 · 萝卜投研 · 上市公司公告，数据时点 2026-09-23 收盘后（北京时间）<br>
+    📊 口径说明：①<strong>涨停家数存在并行口径</strong>——51 只（主流统计）与 53 只（含部分 ST）；<strong>跌停 14 只（主流）与约 15 只（含 ST）</strong>；本文正文统一采用 51 只 / 14 只，以便与上一期 64 只 / 5 只同口径对比。②<strong>封板率 66%、炸板 26 只</strong>为财联社收盘口径，另有第三方情绪模型的赚钱效应与情绪评分输出，本文未采用。③<strong>成交额</strong>——沪深两市约 1.76 万亿（缩量约 3706 亿、−17.4%），沪深京三市 17831 亿元；二者不可混用。④<strong>连板晋级率 37.5%</strong>（连板股总数 12 只、3 板及以上 9 只，上一交易日连板股 24 只）；<strong>1 进 2 晋级率 7.7%（3/39）</strong>；两率的分母口径不同，不能相互替代。⑤<strong>个股主力资金存在明显口径差异</strong>——沃格光电净流入 11.27 亿（一处口径）与 12.81 亿（另一处口径）；净流出前三亦有两套数值（新易盛 −12.58 亿 / 瑞芯微 −11.07 亿 / 东山精密 −10.69 亿 与 瑞芯微 −14.61 亿 / 新易盛 −14.44 亿 / 东山精密 −13.57 亿），<strong>个股名单一致、量级不一致，属数据商统计口径差异，本文并列保留不做统一</strong>。⑥<strong>龙虎榜上榜只数存在三个口径</strong>——54 只（南方财经 · 21 投资通）、59 只（同壁财经）、40 只（证券时报深市口径）；机构合计净买入 3.02 亿（证券时报 · 数据宝）与 3.31 亿（南方财经）并存；机构家数亦有 26 / 27 / 32 只三个口径。⑦<strong>电科思仪资金方向存在冲突</strong>——机构净买入 1.21 亿（证券时报口径）与 1.96 亿（萝卜投研口径）并存，另有一处口径显示其龙虎榜净卖出 9635 万，<strong>方向与量级均不一致，本文仅采信主流机构净买口径并标注</strong>。<br>
+    📰 非一手来源标注：江西宏瑞兴科覆铜板调价通知（上调 10%、半固化片 15%）、建滔积层板 / 松下 / 南亚塑胶前期提价信息、Meta 智能体 Muse 登顶美区应用榜、三星 HBM4 产量与玻璃载板采购计划、华泰证券关于 VNA 量价齐升的观点、医药工业「十五五」规划与创新药 BD 交易总额、房地产存量时代定调与房贷贴息传闻、CRO 临床前需求复苏判断等，<strong>均为媒体或研报转述，需核实原文</strong>。游资席位归属（成都系、章盟主、紫阳东路、量化打板等）与龙虎榜席位性质为第三方数据商标注，非交易所披露口径，<strong>仅供参考</strong>。封板率、赚钱效应、晋级率、情绪周期阶段判定等量化输出为第三方模型结果，<strong>非官方指标</strong>。<br>
+    🔍 数据缺口：①<strong>中国长城（000066）今日具体走势与资金数据未检索到</strong>，故昨日清单中该项无法打勾，未做补白；②<strong>兆易创新今日具体资金数据未检索到</strong>（昨日为全市场净流入第一），本期仅以所属电子行业净流出 48.17 亿与净流出前三全为科技硬件高位股作方向性侧证；③<strong>科翔股份澄清后走势、超声电子以外的产业链澄清个股次日表现未检索到</strong>；④<strong>哈药股份当日走势与龙虎榜口径存在不一致</strong>（一处口径显示其为主板跌幅榜个股、另一口径显示其龙虎榜净买入居前），本文未采信任一方向，仅在缺口处声明；⑤9/23 当日两融数据为 T+1 披露口径，本文采用 9/22 已披露数值（沪深北两融余额 26550.08 亿元）；⑥<strong>北向资金当日净买入总额的完整盘后口径未检索到</strong>，仅有「陆股通现身 21 只上榜个股、合计净买入 2.39 亿」的龙虎榜席位口径；⑦<strong>当日未检索到「澄清传闻但主业为真、且澄清后仍获资金持续买入」的正面案例</strong>，故风险澄清表中未列 🟢 项，未做补白。<br>
+    📐 规则编号说明：本期新增规则顺延至 <strong>50—53</strong>（中位断层型退潮识别 / 上游材料涨价函自上而下传导 / 同板块分支修复能力分化 / 停牌核查复牌首日按情绪高点处理）。编号出现顺延的原因：9/22 期编号止于 41，其后 10/8、10/9 两期为补录，规则 42—49 是在补录时才补齐的，故本期的连续编号从 50 起。<br>
+    <div class="disc"><strong>免责声明</strong>：以上内容基于公开数据和量化分析，仅供参考，不构成投资建议。市场有风险，投资需谨慎。任何投资决策应结合个人风险承受能力、资金状况和投资目标独立判断，必要时咨询持牌专业机构。过往表现不预示未来收益。文中涉及的个股名称、代码与价格仅为当日盘面客观记录与逻辑推演样本，不代表任何推荐意见。文中所述「规则」为个人交易框架的自我约束条款，不具备普遍适用性。</div>
+    <div style="margin-top:12px;color:#999">记住：放量可以是抛压，缩量也可以是换轨——量能的方向比绝对值重要，但量能的位置（是否跌破阈值）永远优先于题材的硬度。澄清公告分三级：身份否定 ＞ 能力边界 ＞ 占比澄清，级别越高，杀伤越直接。当 2 板以上晋级率与 1 进 2 晋级率严重背离时，市场告诉你的是「高位还有人在接，但低位已经没人敢试」——这不是修复，是断层。</div>
+  </div>
+
+</div>
+</body>
+</html>

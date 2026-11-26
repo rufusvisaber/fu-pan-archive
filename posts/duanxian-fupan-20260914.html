@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>短线交易复盘框架 · 2026.09.14（周一）</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Microsoft YaHei", "PingFang SC", sans-serif;
+    background: #f0f2f5;
+    color: #1a1a2e;
+    padding: 24px;
+    line-height: 1.6;
+  }
+  .container { max-width: 1400px; margin: 0 auto; }
+
+  .header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #fff;
+    padding: 32px 40px;
+    border-radius: 16px 16px 0 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 300px; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(230,57,70,0.15));
+  }
+  .header h1 { font-size: 28px; font-weight: 800; letter-spacing: 1px; }
+  .header .subtitle { font-size: 14px; color: #a0aec0; margin-top: 6px; }
+  .header .meta { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+  .header .meta-item {
+    background: rgba(255,255,255,0.08);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    color: #cbd5e0;
+  }
+  .header .meta-item span { color: #e63946; font-weight: 700; }
+  .header .meta-item span.green { color: #2ecc71; }
+
+  .section {
+    background: #fff;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .section-header {
+    padding: 16px 24px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-header .icon { font-size: 22px; }
+  .sh-0 { background: linear-gradient(135deg, #6c5ce7, #a29bfe); }
+  .sh-1 { background: linear-gradient(135deg, #c0392b, #e74c3c); }
+  .sh-2 { background: linear-gradient(135deg, #2c3e50, #34495e); }
+  .sh-3 { background: linear-gradient(135deg, #8e44ad, #9b59b6); }
+  .sh-4 { background: linear-gradient(135deg, #d35400, #e67e22); }
+  .sh-5 { background: linear-gradient(135deg, #16a085, #1abc9c); }
+  .sh-6 { background: linear-gradient(135deg, #2980b9, #3498db); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th {
+    background: #f8f9fa;
+    padding: 12px 10px;
+    text-align: center;
+    font-weight: 700;
+    color: #2c3e50;
+    border-bottom: 3px solid #e63946;
+    white-space: nowrap;
+    position: sticky; top: 0;
+  }
+  tbody td {
+    padding: 10px 8px;
+    text-align: center;
+    border-bottom: 1px solid #eef0f3;
+    vertical-align: middle;
+  }
+  tbody tr:hover { background: #fff5f5; }
+  tbody tr:nth-child(even) { background: #fafbfc; }
+  tbody tr:nth-child(even):hover { background: #fff5f5; }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .tag-red { background: #ffe0e0; color: #c0392b; }
+  .tag-green { background: #d5f5e3; color: #1e8449; }
+  .tag-orange { background: #fef5e7; color: #d35400; }
+  .tag-blue { background: #e8f0fe; color: #196f3d; }
+  .tag-purple { background: #f4ecf7; color: #7d3c98; }
+  .tag-gray { background: #eee; color: #666; }
+  .tag-dark { background: #2c3e50; color: #fff; }
+  .tag-danger { background: #c0392b; color: #fff; }
+  .tag-warning { background: #f39c12; color: #fff; }
+
+  .stock-name { font-weight: 700; color: #1a1a2e; }
+  .stock-code { font-size: 11px; color: #999; }
+  .signal-up { color: #e63946; font-weight: 700; }
+  .signal-down { color: #2ecc71; font-weight: 700; }
+
+  .logic-box { padding: 24px; background: #fff; }
+  .logic-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .logic-card {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 18px 20px;
+    border-left: 4px solid #e63946;
+  }
+  .logic-card h4 {
+    font-size: 15px; font-weight: 700; color: #1a1a2e;
+    margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
+  }
+  .logic-card p { font-size: 13px; color: #555; line-height: 1.7; }
+  .logic-card .key { color: #e63946; font-weight: 700; }
+  .logic-card.green-card { border-left-color: #1abc9c; }
+  .logic-card.green-card .key { color: #1abc9c; }
+  .logic-card.orange-card { border-left-color: #e67e22; }
+  .logic-card.orange-card .key { color: #e67e22; }
+  .logic-card.purple-card { border-left-color: #9b59b6; }
+  .logic-card.purple-card .key { color: #9b59b6; }
+
+  .sub-title {
+    font-size: 15px; font-weight: 700; color: #1a1a2e;
+    margin: 22px 0 10px; padding-left: 10px; border-left: 4px solid #e63946;
+  }
+  .sub-title:first-child { margin-top: 0; }
+  .sub-note { font-size: 12.5px; color: #666; margin-bottom: 8px; }
+
+  .alert-box {
+    margin: 16px 24px;
+    padding: 14px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .alert-danger { background: #fff5f5; border: 1px solid #fab1a0; color: #c0392b; }
+  .alert-warning { background: #fef9e7; border: 1px solid #ffeaa7; color: #d35400; }
+  .alert-info { background: #eef7ff; border: 1px solid #74b9ff; color: #2c3e50; }
+  .alert-success { background: #eafaf1; border: 1px solid #2ecc71; color: #1e8449; }
+
+  .footer {
+    text-align: center;
+    padding: 24px;
+    font-size: 12px;
+    color: #999;
+    background: #fff;
+    border-radius: 0 0 12px 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+
+  @media (max-width: 768px) {
+    body { padding: 12px; }
+    .header { padding: 20px; }
+    .header h1 { font-size: 20px; }
+    .logic-grid { grid-template-columns: 1fr; }
+    table { font-size: 11px; }
+    thead th, tbody td { padding: 8px 4px; }
+  }
+
+  .text-left { text-align: left; }
+  .font-bold { font-weight: 700; }
+  .color-red { color: #e63946; }
+  .color-green { color: #2ecc71; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>短线交易复盘框架 · 2026.09.14（周一）</h1>
+    <div class="subtitle">龙头 vs 杂毛 / 跟风反推识别 / 辟谣排查 / 题材质量评估 ｜ 验证基准：2026.09.11（周五）</div>
+    <div class="meta">
+      <div class="meta-item">日期：<span>2026.09.14（周一）</span></div>
+      <div class="meta-item">涨停：<span>55只</span> ↑（昨40）</div>
+      <div class="meta-item">跌停：<span class="green">16只</span> ↓（昨21，收敛）</div>
+      <div class="meta-item">封板率：<span class="green">64.7%</span> ↓（炸板30家）</div>
+      <div class="meta-item">成交额：<span class="green">1.63万亿</span> 缩量3427亿 ⚠️ 年内次低</div>
+      <div class="meta-item">晋级率：<span>57.1%</span> ↑（昨33%）</div>
+      <div class="meta-item">连板家数：<span>11只</span> 3板及以上 4只</div>
+      <div class="meta-item">最高板：<span>12天7板</span> 国芳集团（绕异动）</div>
+      <div class="meta-item">指数：<span class="green">-0.07%</span> 沪指3885 / 创业板-1.1%</div>
+      <div class="meta-item">情绪周期：<span>修复中继（轮动扩散）</span></div>
+    </div>
+  </div>
+
+  <!-- Part 0 -->
+  <div class="section">
+    <div class="section-header sh-0"><span class="icon">✅</span> 〇、昨日（9/11）复盘判断验证 — 复盘要闭环，错了认对了吗</div>
+    <div class="alert-box alert-success">
+      <span>🎯</span>
+      <div><strong>复盘的意义不在预测，在于验证逻辑、修正框架。</strong>昨日判断是「资金完成从农业妖股 → AI硬件涨价链的大搬家，新主线确立后的第一个周一通常是分歧→再一致的确认日」。逐项看结果：</div>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>昨日判断（9/11）</th><th>今日实际（9/14）</th><th>验证结果</th><th>逻辑修正</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-left font-bold">P0：AI硬件涨价链分歧转一致<br>风华高科（封单5.74亿）和超声电子（5天3板）是双龙头</td>
+            <td class="text-left"><span class="signal-up">超声电子 6天4板晋级</span>（收22.63，换手19.25%）；双星新材2连板；但<strong>风华高科未涨停</strong>（仅跟涨）。PCB分化：澳弘电子2连板、科翔股份/满坤科技涨停，龙头内部出现强弱分化</td>
+            <td><span class="tag tag-orange">◐ 部分兑现</span></td>
+            <td class="text-left">主线没走「分歧转一致」，而是<strong>「分化扩散」</strong>——龙头超声电子走强、风华掉队。修正：主线确立后的确认日若量能萎缩，应预期<strong>「缩圈」而非「全面加速」</strong></td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">P1：闽东电力 4板晋级战<br>4板决定电力方向天花板，叠加算电协同国际标准立项催化</td>
+            <td class="text-left">闽东电力<span class="signal-up">开盘一字涨停，4连板晋级成功</span>（报15.27，封单2.44亿）；豫能控股涨停（封单11.47亿）带动电力方向</td>
+            <td><span class="tag tag-green">✅ 应验</span></td>
+            <td class="text-left">电力方向高度打开。新增催化：9/11国常会提「完善算力基础设施、加快绿电直连/源网荷储落地」——<strong>算电协同从标准立项进入政策落地，逻辑加强</strong></td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">P1：跌停家数收敛情况<br>跌停21只，高位出清是否结束</td>
+            <td class="text-left">跌停<span class="signal-down">收敛至16只</span>；但瑞尔特天地板、龙版传媒复牌一字跌停、高位人气股集体退潮</td>
+            <td><span class="tag tag-orange">◐ 部分兑现</span></td>
+            <td class="text-left">出清<strong>「总量收敛、结构未止」</strong>——旧妖股（瑞尔特/龙版传媒）仍在杀，但跌停总数下降。修正：看跌停家数要分「高位妖股补跌」和「全面杀跌」，前者不阻碍新方向</td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">P0：桂林旅游 / 瑞尔特（旧妖股只观察）<br>桂林炸板巨阴+瑞尔特独苗4板——旧周期收尾温度计</td>
+            <td class="text-left">瑞尔特上演<span class="signal-down">「天地板」</span>（4连板后开板→跌停，收8.38）；但<span class="signal-up">桂林旅游反包涨停</span>（6天5板，收10.86，换手33.72%）——受中秋国庆双节+《旅游强区十五五规划》新催化</td>
+            <td><span class="tag tag-orange">◐ 部分兑现</span></td>
+            <td class="text-left">瑞尔特如剧本断板（✅）；但桂林旅游被新催化救活反包。修正：<strong>有产业政策新催化的旧妖股，与纯资金妖股要区别对待</strong>——前者可能二次启动，不能一概「坚决回避」</td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">P2：PCB第二梯队晋级（博敏/骏亚/嘉立创）</td>
+            <td class="text-left">博敏/骏亚未连板；PCB梯队由<span class="signal-up">澳弘电子2连板、科翔股份/满坤科技涨停</span>接棒</td>
+            <td><span class="tag tag-orange">◐ 部分兑现</span></td>
+            <td class="text-left"><strong>梯队在换血而非原班晋级</strong>。修正：梯队跟踪要盯「当日封单最强的新面孔」，而非固守昨日名单</td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">铁律验证：「反推板走出来的寥寥无几」+ 周五「无主线方向反弹不接」</td>
+            <td class="text-left">周五点名的旧妖股瑞尔特今日<span class="signal-down">天地板</span>（✅应验）。但<span class="signal-up">桂林旅游反包</span>说明：当旧方向出现全新产业催化（旅游强区规划）时，会走出独立行情</td>
+            <td><span class="tag tag-orange">◐ 部分兑现</span></td>
+            <td class="text-left">铁律需补充<strong>「新催化例外」</strong>——辟谣/证伪的方向若叠加全新产业政策，可能二次启动，不可一概而论</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="alert-box alert-warning">
+      <span>🌡️</span>
+      <div><strong>今日情绪定调：情绪修复延续，但「修复的结构」变了 —— 指数缩量走弱、题材高切低。</strong>三大信号：①晋级率 33%→57.14% 大幅回升，短线情绪持续回暖（连板股赚钱效应改善）；②但成交额缩至 1.63万亿、创年内次低，<strong>增量资金没有进场，是存量博弈的高切低</strong>；③旧主线 AI硬件涨价链（PCB/MLCC）分化、资金外溢至网络安全 / AI应用 / 培育钻石散热等新方向。<strong>性质：修复期的轮动扩散日</strong>，不是普涨——创业板/科创50跌超1%，高位股仍在退潮（瑞尔特天地板、龙版传媒复牌一字跌停）。</div>
+    </div>
+    <div class="alert-box alert-danger">
+      <span>⚠️</span>
+      <div><strong>今日复盘的核心修正（最重要）：</strong>昨日判断「主线确立→分歧转一致」过于乐观。实际是<strong>主线分化 + 题材高切低</strong>。根本原因：<strong>量能没跟上</strong>（1.63万亿，年内次低）。<strong>新规则：无量的修复 = 轮动而非接力</strong>，题材切换快、持续性弱，操作上应「低吸新方向首板」而非「追高老龙头连板」。</div>
+    </div>
+  </div>
+
+  <!-- Part 1 -->
+  <div class="section">
+    <div class="section-header sh-1"><span class="icon">🔥</span> 一、题材全景扫描 — 新旧 / 想象空间 / 持续性 / 发酵阶段</div>
+    <div class="alert-box alert-warning">
+      <span>⚠️</span>
+      <div><strong>今日最大特征：题材高切低 + 多点开花。</strong>老主线（AI硬件涨价链）内部缩圈分化，资金外溢到网络安全/AI应用、培育钻石散热、汽车整车、医药等方向。<strong>没有明确单一主线，是修复期的「多线轮动」格局。</strong></div>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>题材</th><th>新旧程度</th><th>想象空间</th><th>持续性</th><th>发酵阶段</th><th>龙头 / 连板高度</th><th>板块跟风</th><th>催化驱动</th><th>评级</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-left font-bold">网络安全 / AI应用</td>
+            <td><span class="tag tag-red">新（今日最强）</span></td>
+            <td>中-大</td>
+            <td>中</td>
+            <td><span class="tag tag-danger">爆发首日</span></td>
+            <td class="text-left"><span class="stock-name">中新赛克</span> <span class="stock-code">002912</span> 3连板（一字板）<br><span class="stock-name">永信至诚</span> 20cm涨停</td>
+            <td class="text-left">天融信/国安股份/启明信息等首板集群，<strong>当日涨停家数最多方向之一</strong></td>
+            <td class="text-left">大模型巨头称需放缓新模型开发（安全监管预期）+ AI大模型/智能体应用催化</td>
+            <td>★★★★☆<br><span class="tag tag-red">新方向，首日爆发看持续性</span></td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">AI硬件涨价链<br>（PCB/MLCC/玻纤）</td>
+            <td><span class="tag tag-orange">半新（主线缩圈）</span></td>
+            <td>大</td>
+            <td>强（但拥挤）</td>
+            <td><span class="tag tag-warning">分化扩散</span></td>
+            <td class="text-left"><span class="stock-name">超声电子</span> <span class="stock-code">000823</span> 6天4板（PCB龙头）<br><span class="stock-name">双星新材</span> <span class="stock-code">002585</span> 2连板（MLCC）</td>
+            <td class="text-left">PCB：澳弘电子2板/科翔/满坤/康达新材/贤丰/中京涨停；MLCC：双星领涨</td>
+            <td class="text-left">村田停产部分MLCC（扩产保AI）+ 电子布/铜箔/CCL价格上行 + 国金证券看好MLCC</td>
+            <td>★★★★☆<br><span class="tag tag-orange">逻辑最硬但已分化，只做最强龙头</span></td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">电力 / 算电协同</td>
+            <td><span class="tag tag-red">新（政策加强）</span></td>
+            <td>大</td>
+            <td>中-高</td>
+            <td><span class="tag tag-warning">龙头确认后期</span></td>
+            <td class="text-left"><span class="stock-name">闽东电力</span> <span class="stock-code">000993</span> 4连板（一字，方向总龙头）</td>
+            <td class="text-left">豫能控股涨停（封单11.47亿）、杭州热电/乐山/上海电力/三星电气跟涨</td>
+            <td class="text-left">9/11国常会：完善算力基础设施、加快绿电直连/源网荷储落地 + CPE2026国际算电协同产业大会将召开</td>
+            <td>★★★★☆<br><span class="tag tag-green">龙头晋级+政策加码，看高度</span></td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">培育钻石 / 金刚石散热</td>
+            <td><span class="tag tag-red">新（今日爆发）</span></td>
+            <td>中-大</td>
+            <td>中</td>
+            <td><span class="tag tag-danger">爆发首日</span></td>
+            <td class="text-left"><span class="stock-name">黄河旋风</span> 涨停（4天2板）<br><span class="stock-name">恒盛能源</span> 首板</td>
+            <td class="text-left">机构指金刚石散热迎AI产业化拐点，多股封板</td>
+            <td class="text-left">2025-2029全球AI芯片金刚石铜市场CAGR有望达237% + 金刚石-碳化硅复合材料突破</td>
+            <td>★★★☆☆<br><span class="tag tag-purple">新方向，题材想象空间大</span></td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">汽车整车 / 重组</td>
+            <td><span class="tag tag-orange">半新（异动）</span></td>
+            <td>中</td>
+            <td>中</td>
+            <td>异动拉升</td>
+            <td class="text-left"><span class="stock-name">众泰汽车</span> <span class="stock-code">000980</span> 5天4板<br><span class="stock-name">山子高科</span> 一字板</td>
+            <td class="text-left">海马/安凯客车涨停，广汽集团因重要事项全天停牌（港股高开8.64%）</td>
+            <td class="text-left">一汽、广汽重组传闻 + 太乙圣莲拟出资30亿入主哪吒汽车</td>
+            <td>★★★☆☆<br><span class="tag tag-gray">重组题材，消息驱动持续性待验</span></td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">医药 / CRO</td>
+            <td><span class="tag tag-red">新（今日活跃）</span></td>
+            <td>中</td>
+            <td>中</td>
+            <td>启动</td>
+            <td class="text-left"><span class="stock-name">万邦医药</span> <span class="stock-code">301520</span> / <span class="stock-name">近岸蛋白</span> <span class="stock-code">688137</span> 20cm涨停</td>
+            <td class="text-left">三力制药2板、精华制药/津药药业/澳洋健康涨停</td>
+            <td class="text-left">国内首款AI辅助研发原创药获批上市 + CRO板块景气</td>
+            <td>★★★☆☆<br><span class="tag tag-blue">AI+医药交叉，看能否成气候</span></td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">旅游 / 大消费</td>
+            <td><span class="tag tag-gray">旧（新催化救活）</span></td>
+            <td>小</td>
+            <td>低-中</td>
+            <td>妖股反包</td>
+            <td class="text-left"><span class="stock-name">桂林旅游</span> <span class="stock-code">000978</span> 6天5板（反包）<br><span class="stock-name">国芳集团</span> 12天7板</td>
+            <td class="text-left">天目湖/华天酒店/张家界跟涨；中视传媒2板</td>
+            <td class="text-left">《旅游强区建设十五五规划》+ 中秋国庆双节超长出行窗口</td>
+            <td>★★☆☆☆<br><span class="tag tag-warning">政策催化的妖股反包，高波动</span></td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">液冷服务器 / 光通信</td>
+            <td><span class="tag tag-orange">半新（分支）</span></td>
+            <td>中-大</td>
+            <td>中</td>
+            <td>分支活跃</td>
+            <td class="text-left"><span class="stock-name">华之杰</span>（12天7板）<br><span class="stock-name">意华股份</span> 首板</td>
+            <td class="text-left">宏盛股份涨停，CDU订单排至2026年底</td>
+            <td class="text-left">山东/广东液冷产线满产 + 光博会余温</td>
+            <td>★★★☆☆<br><span class="tag tag-blue">算力分支外溢，跟随主线节奏</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Part 2 -->
+  <div class="section">
+    <div class="section-header sh-2"><span class="icon">🎯</span> 二、个股定位 — 龙头（主动拉升）vs 杂毛（反推跟风）</div>
+    <div class="alert-box alert-danger">
+      <span>🚨</span>
+      <div><strong>核心铁律不变：</strong>主动拉升强势封板带动题材 = <span class="signal-up">老大（可做）</span>；题材发酵反推身位 = <span class="signal-down">杂毛（少碰）</span>。今日验证：瑞尔特4板后天地板，正是「纯资金妖股卡最高板」的兑现。</div>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>股票</th><th>所属题材</th><th>定位</th><th>主动封板？</th><th>反推身位？</th><th>位置</th><th>风险信号</th><th>交易判断</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="stock-name">闽东电力</span><br><span class="stock-code">000993</span></td>
+            <td>电力/算电协同</td>
+            <td><span class="tag tag-danger">方向总龙头</span></td>
+            <td class="text-left">✅ 一字涨停，封单2.44亿，主动晋级</td>
+            <td>否</td>
+            <td>中位（4板）</td>
+            <td class="text-left">4板后进入高位，注意是否5板</td>
+            <td>★★★ 第一关注<br><span class="tag tag-red">方向总龙头，看5板晋级决定电力高度</span></td>
+          </tr>
+          <tr>
+            <td><span class="stock-name">超声电子</span><br><span class="stock-code">000823</span></td>
+            <td>PCB/覆铜板</td>
+            <td><span class="tag tag-danger">题材龙头</span></td>
+            <td class="text-left">✅ 主动晋级6天4板，换手19.25%</td>
+            <td>否</td>
+            <td>中位（4板）</td>
+            <td class="text-left">高换手=分歧加大；风华掉队后成PCB独苗</td>
+            <td>★★★ 第一关注<br><span class="tag tag-red">PCB唯一高度股，分歧低吸，不追高</span></td>
+          </tr>
+          <tr>
+            <td><span class="stock-name">中新赛克</span><br><span class="stock-code">002912</span></td>
+            <td>网络安全</td>
+            <td><span class="tag tag-danger">新方向龙头</span></td>
+            <td class="text-left">✅ 一字涨停3连板，换手仅1.06%</td>
+            <td>否</td>
+            <td>中位（3板）</td>
+            <td class="text-left">一字板换手极低，筹码锁定好但需防高位</td>
+            <td>★★★ 关注<br><span class="tag tag-orange">新方向高度股，看4板确认网络安全成主线</span></td>
+          </tr>
+          <tr>
+            <td><span class="stock-name">双星新材</span><br><span class="stock-code">002585</span></td>
+            <td>MLCC</td>
+            <td><span class="tag tag-warning">题材次龙头</span></td>
+            <td class="text-left">✅ 2连板，涨停封单超24万手</td>
+            <td>否</td>
+            <td>中位</td>
+            <td class="text-left">MLCC分支，受村田停产催化</td>
+            <td>★★ 可关注<br><span class="tag tag-orange">MLCC最强跟风，低吸不追板</span></td>
+          </tr>
+          <tr>
+            <td><span class="stock-name">众泰汽车</span><br><span class="stock-code">000980</span></td>
+            <td>新能源汽车</td>
+            <td>重组龙头</td>
+            <td class="text-left">✅ 5天4板</td>
+            <td>否</td>
+            <td>中位</td>
+            <td class="text-left">重组消息驱动，基本面弱（股价2.33元）</td>
+            <td>★★ 谨慎<br><span class="tag tag-gray">纯消息妖股，重组落地前波动大</span></td>
+          </tr>
+          <tr>
+            <td><span class="stock-name">凯盛新能</span><br><span class="stock-code">600876</span></td>
+            <td>玻璃基板/玻纤</td>
+            <td>跟风（3板）</td>
+            <td>否</td>
+            <td><span class="tag tag-orange">✅ 题材反推</span></td>
+            <td>中位（3板）</td>
+            <td class="text-left">⚠️ 玻纤拥挤 + 反推位，昨日已列「不追」</td>
+            <td>⚠ 回避<br><span class="tag tag-gray">反推票3板，博弈价值低</span></td>
+          </tr>
+          <tr>
+            <td><span class="stock-name">瑞尔特</span><br><span class="stock-code">002790</span></td>
+            <td>大消费/卫浴</td>
+            <td>独苗妖股</td>
+            <td class="text-left">否（4板后开板）</td>
+            <td>否</td>
+            <td>高位（4板）</td>
+            <td class="text-left">🚨 <span class="signal-down">天地板</span>！半年报营收降17.47%、净利-0.11亿；公司主动提示业绩亏损风险</td>
+            <td>⚠ 已阵亡<br><span class="tag tag-danger">昨日复盘预判「高危」，今日天地板兑现，坚决不接</span></td>
+          </tr>
+          <tr>
+            <td><span class="stock-name">龙版传媒</span><br><span class="stock-code">605577</span></td>
+            <td>传媒</td>
+            <td>高位退潮</td>
+            <td>否</td>
+            <td>否</td>
+            <td>高位</td>
+            <td class="text-left">🚨 复牌后<span class="signal-down">一字跌停</span>（维权警示），高位股退潮代表</td>
+            <td>⚠ 回避<br><span class="tag tag-gray">高位复牌补跌，退潮期不碰</span></td>
+          </tr>
+          <tr>
+            <td><span class="stock-name">桂林旅游</span><br><span class="stock-code">000978</span></td>
+            <td>旅游（前辟谣妖股）</td>
+            <td>妖股反包</td>
+            <td class="text-left">反包涨停，但换手33.72%极高</td>
+            <td>否</td>
+            <td>高位（6天5板）</td>
+            <td class="text-left">⚠️ 前有「三重澄清」历史；换手33.72% + 机构龙虎榜净卖1604万</td>
+            <td>⚠ 谨慎<br><span class="tag tag-warning">新催化（旅游规划）救活，但高换手=接力资金博弈，不追</span></td>
+          </tr>
+          <tr>
+            <td><span class="stock-name">万邦医药</span> / <span class="stock-name">近岸蛋白</span><br><span class="stock-code">301520 / 688137</span></td>
+            <td>医药/CRO</td>
+            <td>新方向标的</td>
+            <td class="text-left">✅ 20cm涨停</td>
+            <td>否</td>
+            <td>低位启动</td>
+            <td class="text-left">AI辅助研发原创药获批催化，低位</td>
+            <td>★★ 可关注<br><span class="tag tag-blue">低位20cm新方向，看能否延续</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Part 3 -->
+  <div class="section">
+    <div class="section-header sh-3"><span class="icon">🔍</span> 三、辟谣 / 澄清监控表 — 排雷第一</div>
+    <div class="alert-box alert-info">
+      <span>✅</span>
+      <div><strong>沿用「辟谣三问法」：</strong>①澄清的是「传闻概念」还是「上涨的全部理由」？②澄清后是否仍按主业逻辑定价？③公司是否同时提示估值极端偏离 / 业绩风险？<strong>三问全中后者 = 一个都不碰。</strong></div>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>股票</th><th>连板/位置</th><th>市场传闻 / 背景</th><th>澄清内容</th><th>澄清后走势</th><th>雷区等级</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="stock-name">瑞尔特</span><br><span class="stock-code">002790</span></td>
+            <td>4板后</td>
+            <td class="text-left">大消费/卫浴妖股，无明确产业催化</td>
+            <td class="text-left">异动公告：经营正常、无应披露未披露信息；并<strong>主动提示</strong>：上半年营收7.59亿同比-17.47%，净利-0.11亿同比-120.47%，请投资者正视业绩亏损现状</td>
+            <td class="text-left">今日上演<span class="signal-down">「天地板」→ 收跌停</span> 💀</td>
+            <td><span class="tag tag-danger">🔴 已引爆</span><br><span class="text-left">三问全中：无主业逻辑 + 主动提示亏损 = 纯资金妖股裸奔</span></td>
+          </tr>
+          <tr>
+            <td><span class="stock-name">龙版传媒</span><br><span class="stock-code">605577</span></td>
+            <td>高位</td>
+            <td class="text-left">传媒高位股</td>
+            <td class="text-left">复牌（含维权相关警示）</td>
+            <td class="text-left"><span class="signal-down">一字跌停</span> 💀</td>
+            <td><span class="tag tag-danger">🔴 已引爆</span><br><span class="text-left">高位退潮，复牌即闷杀</span></td>
+          </tr>
+          <tr>
+            <td><span class="stock-name">桂林旅游</span><br><span class="stock-code">000978</span></td>
+            <td>6天5板</td>
+            <td class="text-left">低空经济 + AI文旅 + 平陆运河（9/11已三重澄清）</td>
+            <td class="text-left">9/11：低空经济协议为2025年1月框架无实质进展；AI文旅四项业务不产生收入；PE 450倍</td>
+            <td class="text-left">今日受旅游规划新催化<span class="signal-up">反包涨停</span> ↑</td>
+            <td><span class="tag tag-warning">🟡 中危</span><br><span class="text-left">概念已被否认，但新产业催化独立驱动；高换手33.72% = 纯资金博弈，不追</span></td>
+          </tr>
+          <tr>
+            <td><span class="stock-name">科森科技</span><br><span class="stock-code">603626</span></td>
+            <td>首板</td>
+            <td class="text-left">机器人 + 固态电池</td>
+            <td class="text-left">为公司现有业务（家用机器人结构件 + 固态电池合资），非传闻</td>
+            <td class="text-left"><span class="signal-up">涨停 ✓</span></td>
+            <td><span class="tag tag-green">🟢 可控</span><br><span class="text-left">主业逻辑真实</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="alert-box alert-danger">
+      <span>🚨</span>
+      <div><strong>今日排雷结论：</strong>瑞尔特是「辟谣三问法」教科书级案例——<strong>公司主动提示业绩亏损 + 无产业催化 + 板块无跟风</strong>，三问全中后者，昨日复盘已标「高危」，今日天地板精准兑现。另需注意：桂林旅游这类「澄清后仍靠新催化反包」的，属于特例——<strong>概念辟谣 ≠ 股价必死</strong>，关键看是否有真实的新产业逻辑接力。但33.72%的换手说明是接力资金在博弈，不是主力建仓，普通选手不参与。</div>
+    </div>
+  </div>
+
+  <!-- Part 4 -->
+  <div class="section">
+    <div class="section-header sh-4"><span class="icon">🧠</span> 四、复盘核心逻辑框架 — 大神思维</div>
+    <div class="logic-box">
+
+      <div class="sub-title">① 龙头 vs 杂毛 怎么分（今日实战版）</div>
+      <div class="sub-note">今日两组对照，规律继续闭合：</div>
+      <div class="logic-grid">
+        <div class="logic-card green-card">
+          <h4>✅ 龙头活</h4>
+          <p><span class="key">闽东电力（一字4板带电力）｜超声电子（6天4板独扛PCB）｜中新赛克（一字3板带网络安全）</span><br>共同特征：<span class="key">主动进攻 + 封单大 + 板块跟风 + 换手健康</span></p>
+        </div>
+        <div class="logic-card">
+          <h4>❌ 杂毛死</h4>
+          <p><span class="key">瑞尔特（天地板）｜龙版传媒（一字跌停）｜凯盛新能（反推3板不追）</span><br>共同特征：<span class="key">无产业催化 / 高位退潮 / 题材反推身位</span></p>
+        </div>
+      </div>
+      <div class="alert-box alert-warning">
+        <span>💡</span>
+        <div><strong>结论：退潮期的照妖镜 + 修复期的分化镜。</strong>今日是修复期，龙头继续走强、杂毛继续补跌——<strong>分化在修复期同样成立，甚至更明显</strong>（因为量能不足，资金只够抱团最强的）。</div>
+      </div>
+
+      <div class="sub-title">② 题材质量四维评估（当前版本）</div>
+      <div class="logic-grid">
+        <div class="logic-card">
+          <h4>新旧</h4>
+          <p>网络安全/AI应用（新）≈ 培育钻石散热（新）&gt; AI硬件涨价链（半新、缩圈）&gt; 电力算电协同（政策加强）&gt; 汽车重组（消息）&gt; 旅游妖股（旧+新催化）</p>
+        </div>
+        <div class="logic-card orange-card">
+          <h4>想象空间</h4>
+          <p>AI算力全链条最硬（<span class="key">硬件涨价链 + 液冷 + 网络安全 + 散热</span>），都是AI资本开支受益；培育钻石散热是新的分支想象</p>
+        </div>
+        <div class="logic-card purple-card">
+          <h4>持续性</h4>
+          <p><span class="key">业绩可验证型（涨价函/订单）&gt; 政策型（算电协同/旅游规划）&gt; 消息脉冲型（重组传闻）</span>。网络安全受「大模型放缓」消息驱动，属政策/监管预期型，持续性看后续演进</p>
+        </div>
+        <div class="logic-card green-card">
+          <h4>位置</h4>
+          <p>新方向（网络安全/培育钻石/医药）多在低位首板；老龙头（超声4板/闽东4板）已中位——<span class="key">低位新方向性价比 &gt; 中位老龙头</span></p>
+        </div>
+      </div>
+
+      <div class="sub-title">③ 跟风反推票识别清单（今日对照）</div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>识别信号</th><th>今日案例</th></tr></thead>
+          <tbody>
+            <tr><td class="text-left font-bold">✅ 板块先涨，它后涨</td><td class="text-left">凯盛新能（玻纤，跟随九鼎）</td></tr>
+            <tr><td class="text-left font-bold">✅ 封板晚 / 未封住</td><td class="text-left">风华高科（昨日龙头，今日仅跟涨未涨停）—— <span class="signal-up">老大掉队即降级</span></td></tr>
+            <tr><td class="text-left font-bold">✅ 高位卡位但无产业逻辑</td><td class="text-left">瑞尔特（4板妖股 → 天地板）</td></tr>
+            <tr><td class="text-left font-bold">✅ 题材反推 + 拥挤</td><td class="text-left">凯盛新能（3板反推，玻纤拥挤度95%分位）</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="alert-box alert-info">
+        <span>💡</span>
+        <div><strong>今日新增识别信号：「龙头掉队信号」</strong>——风华高科昨日是MLCC龙头（封单全场第一），今日未涨停只跟涨，说明<span class="color-red">老主线的龙头会轮换</span>。看到昨日龙头今日不能封板，就该警惕该分支退潮，把注意力转向新龙头或新方向。</div>
+      </div>
+
+      <div class="sub-title">④ 情绪周期定位（最重要的一块）</div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>日期</th><th>涨停</th><th>特征</th><th>周期阶段</th></tr></thead>
+          <tbody>
+            <tr><td>9/7 周一</td><td>93家</td><td class="text-left">农业链高潮（厄尔尼诺）</td><td><span class="tag tag-red">高潮</span></td></tr>
+            <tr><td>9/8 周二</td><td>73家</td><td class="text-left">轮动磷化工/CRO</td><td><span class="tag tag-orange">高潮余温</span></td></tr>
+            <tr><td>9/9 周三</td><td>48家</td><td class="text-left">百大5板封神，分歧</td><td><span class="tag tag-warning">分歧</span></td></tr>
+            <tr><td>9/10 周四</td><td>35家</td><td class="text-left">农业崩塌 + 辟谣潮</td><td><span class="tag tag-green">退潮确认</span></td></tr>
+            <tr><td>9/11 周五</td><td>40家</td><td class="text-left">放量深V，新主线确立</td><td><span class="tag tag-blue">修复初期</span></td></tr>
+            <tr><td class="font-bold">9/14 周一</td><td class="font-bold">55家</td><td class="text-left">缩量1.63万亿，晋级率57%，题材高切低，无单一主线</td><td><span class="tag tag-danger">修复中继（轮动扩散）</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="alert-box alert-warning">
+        <span>📍</span>
+        <div><strong>周期定位：修复期中继，尚未进入「确认期」。</strong>信号矛盾：晋级率大幅回升（57%）说明<span class="color-red">情绪在修复</span>；但成交额创年内次低说明<span class="color-green">存量博弈、增量未入场</span>。这种「情绪修复 + 量能萎缩」的组合，通常是<strong>轮动行情</strong>的特征——题材切换快、个股持续性弱、不适合追高，适合低吸新方向首板。下一步看量能能否回1.8万亿，回则确认修复，不回则可能二次探底。</div>
+      </div>
+
+      <div class="sub-title">⑤ 今日题材脉络（资金去哪了）</div>
+      <div class="sub-note">从上周的「单主线」到本周的「多线轮动」，资金路径：</div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>方向</th><th>资金动向</th><th>解读</th></tr></thead>
+          <tbody>
+            <tr><td class="text-left font-bold">AI硬件涨价链</td><td class="text-left">PCB缩圈（超声独强、风华掉队）、MLCC延续（双星2板）</td><td class="text-left">老主线没死但分化，从「全面」收缩到「最强龙头」</td></tr>
+            <tr><td class="text-left font-bold">网络安全 / AI应用</td><td class="text-left">中新赛克3板一字 + 天融信/国安/启明/永信至诚涨停潮</td><td class="text-left"><span class="signal-up">今日资金新流入方向</span>，受大模型放缓消息驱动</td></tr>
+            <tr><td class="text-left font-bold">培育钻石散热</td><td class="text-left">黄河旋风 / 恒盛能源涨停</td><td class="text-left">新分支，AI散热想象空间</td></tr>
+            <tr><td class="text-left font-bold">电力 / 算电协同</td><td class="text-left">闽东4板 + 豫能控股涨停（封单11.47亿）</td><td class="text-left">政策加码，资金持续流入</td></tr>
+            <tr><td class="text-left font-bold">汽车整车</td><td class="text-left">众泰5天4板 + 山子高科/海马/安凯涨停</td><td class="text-left">重组消息驱动，广汽停牌刺激</td></tr>
+            <tr><td class="text-left font-bold">高位妖股</td><td class="text-left">瑞尔特天地板、龙版传媒一字跌停</td><td class="text-left">旧周期继续出清</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="sub-title">⑥ 明日（9/15 周二）交易计划框架</div>
+      <div class="logic-card">
+        <h4>🎯 核心思路</h4>
+        <p>修复中继 + 题材轮动格局下，策略是<span class="key">「低吸新方向、跟随最强龙头」</span>，放弃追高、放弃接力高位妖股。重点看两个新方向（网络安全、培育钻石）能否走出持续性，以及老主线（PCB/MLCC）龙头修复情况。</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Part 5 -->
+  <div class="section">
+    <div class="section-header sh-5"><span class="icon">⚔️</span> 五、交易决策矩阵</div>
+    <div class="alert-box alert-info">
+      <span>📈</span>
+      <div><strong>相比昨日的变化：</strong>①「隔日溢价」维度<span class="color-red">升级为可做</span>（晋级率57%）；②「市场情绪」维度仍为谨慎（量能制约，涨停55家、封板率64.7%）；③新增关注新方向（网络安全/培育钻石）的题材质量分。整体：<strong>可做性略升，但仍以低吸为主，不追高。</strong></div>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>维度</th><th>✅ 可做（满分信号）</th><th>⚠️ 谨慎（减分信号）</th><th>🚫 不做（一票否决）</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-left font-bold">题材质量</td>
+            <td class="text-left">产业趋势 + 政策落地（电力算电协同 / 网络安全）</td>
+            <td class="text-left">逻辑真但已分化拥挤（PCB / MLCC）</td>
+            <td class="text-left">无产业逻辑纯消息（重组传闻炒作）</td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">个股定位</td>
+            <td class="text-left">主动晋级 + 封单大 + 带板块（闽东 / 超声 / 中新赛克）</td>
+            <td class="text-left">主线第二梯队首板（需看晋级）</td>
+            <td class="text-left">反推身位板 + 高位妖股（凯盛新能 / 瑞尔特）</td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">辟谣排查</td>
+            <td class="text-left">无澄清或主业为真（科森科技）</td>
+            <td class="text-left">格式化异动公告（凯盛新能）</td>
+            <td class="text-left">澄清全部理由 + 主动提示亏损（瑞尔特）</td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">位置高低</td>
+            <td class="text-left">低位新方向首板（网络安全 / 医药 / 培育钻石）</td>
+            <td class="text-left">中位3-4板（闽东 / 超声 / 中新赛克）</td>
+            <td class="text-left">高位4板以上 + 复牌补跌（瑞尔特 / 龙版传媒）</td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">市场情绪</td>
+            <td class="text-left">涨停 &gt; 80，封板率 &gt; 80%（当前未达）</td>
+            <td class="text-left">涨停55、封板率64.7%、缩量1.63万亿（<span class="tag tag-warning">当前</span>）</td>
+            <td class="text-left">涨停 &lt; 40 且持续缩量</td>
+          </tr>
+          <tr>
+            <td class="text-left font-bold">隔日溢价</td>
+            <td class="text-left">连板晋级率超五成（<span class="signal-up">今日57.14% ↑</span>）</td>
+            <td class="text-left">高位股仍有天地板 / 跌停（瑞尔特 / 龙版传媒）</td>
+            <td class="text-left">昨日涨停股平均收益 &lt; -1% 且批量转跌停</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="alert-box alert-success">
+      <span>🎯</span>
+      <div><strong>今日矩阵结论：</strong>「隔日溢价」维度升级为可做（晋级率57%），「市场情绪」维度仍为谨慎（量能制约）。<strong>综合策略：低吸优先，仓位不超3成</strong>；新方向（网络安全/AI应用/培育钻石）低位首板可轻仓试错，老龙头（超声/闽东）分歧低吸为主，高位妖股一律不碰。</div>
+    </div>
+  </div>
+
+  <!-- Part 6 -->
+  <div class="section">
+    <div class="section-header sh-6"><span class="icon">📋</span> 六、明日（9/15 周二）重点观察清单</div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>优先级</th><th>观察标的</th><th>观察逻辑</th><th>触发条件</th><th>行动计划</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tag tag-danger">P0</span></td>
+            <td class="text-left font-bold">新方向延续性：网络安全 / AI应用</td>
+            <td class="text-left">中新赛克（3板一字）是网络安全高度股，今日涨停集群（天融信/国安/启明/永信至诚）能否延续，决定这个新方向是「一日游」还是「新主线」。观察逻辑：大模型放缓消息驱动的持续性。</td>
+            <td class="text-left">中新赛克4板 + 板块跟风股再涨停</td>
+            <td class="text-left">确认为新主线，低位标的分歧低吸；若一字断板 + 板块退潮 → 定性为消息一日游，不参与</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-danger">P0</span></td>
+            <td class="text-left font-bold">老主线龙头修复：PCB / MLCC</td>
+            <td class="text-left">超声电子（6天4板）是PCB独苗高度股，双星新材（2板）是MLCC最强。关注主线是「缩圈后修复」还是「继续退潮」。风华高科能否回归封板也是重要信号。</td>
+            <td class="text-left">超声电子5板晋级 + PCB集群回暖</td>
+            <td class="text-left">主线修复，龙头分歧低吸；超声断板 + 风华持续掉队 → 收缩到只看防御</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-warning">P1</span></td>
+            <td class="text-left font-bold">闽东电力 5板晋级战 + 电力梯队</td>
+            <td class="text-left">4板已确认电力方向，5板决定电力方向天花板。豫能控股（封单11.47亿）是最强跟风。政策催化（国常会算力基础设施）持续。</td>
+            <td class="text-left">5板晋级</td>
+            <td class="text-left">电力成第二主线，梯队（豫能/杭州热电）分歧低吸；断板 → 电力脉冲定性，转防御</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-warning">P1</span></td>
+            <td class="text-left font-bold">量能能否回升至 1.8 万亿</td>
+            <td class="text-left">今日缩至1.63万亿创年内次低，是当前最大的制约。存量博弈下的轮动行情持续性弱。</td>
+            <td class="text-left">放量回 1.8 万亿 +</td>
+            <td class="text-left">修复确认，可加仓；继续缩量 → 维持仓位 ≤ 3成，防二次探底</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-blue">P2</span></td>
+            <td class="text-left font-bold">培育钻石散热 / 医药CRO 能否成气候</td>
+            <td class="text-left">黄河旋风（培育钻石）、万邦医药/近岸蛋白（医药CRO）是今日新冒头的低位方向，看次日是否有资金接力。</td>
+            <td class="text-left">出现2连板龙头</td>
+            <td class="text-left">纳入候选池轻仓跟踪；一日游 → 忽略</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-blue">P2</span></td>
+            <td class="text-left font-bold">高位妖股出清是否结束</td>
+            <td class="text-left">瑞尔特天地板、龙版传媒一字跌停——旧妖股出清接近尾声。跌停家数从21→16持续收敛。</td>
+            <td class="text-left">跌停缩至个位数</td>
+            <td class="text-left">出清完成，市场环境转好；仍有妖股补跌 → 维持谨慎</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="alert-box alert-warning">
+      <span>📌</span>
+      <div><strong>明日核心剧本：</strong>修复中继 + 题材轮动，<strong>最优策略是「低吸新方向首板 + 跟随最强龙头」</strong>，放弃追高、放弃接力高位妖股。重点验证网络安全（中新赛克）能否成为新主线、老主线（超声/双星）能否修复。若量能持续萎缩 + 新方向一日游，则退回防御（银行/水电）等二次探底。<strong>仓位纪律：3成为上限，活下来比赚快钱重要。</strong></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    📅 复盘日期：2026年9月14日（周一）｜ 数据来源：财联社 / 央广财经 / 证券时报 / 新浪财经 / 公开市场信息<br>
+    ⚠️ 本表仅为交易复盘分析框架，不构成投资建议。股市有风险，投资需谨慎。<br>
+    记住：反推板走出来的寥寥无几。辟谣妖股不碰。退潮是照妖镜——杂毛全灭，龙头全活。
+  </div>
+
+</div>
+</body>
+</html>
